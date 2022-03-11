@@ -1,55 +1,11 @@
-#### ANALIZANDO DATOS DE RNASEQ ----------------------------------
-#
-#    SCRIPT PARA GUIA DE Tp 4 - Biolog?a Celular y Molecular
-#    Centro Regional Universitario Bariloche
-#    Universidad Nacional del Comahue
-#
-#    Generado por Eduardo E. Zattara
-#    a partir de la vi?eta escrita por
-#    Michael I. Love, Simon Anders, Vladislav Kim and Wolfgang Huber. 2019.
-#    RNA-seq workflow: gene-level exploratory analysis and differential expression. 
-#    http://bioconductor.org/packages/release/workflows/vignettes/rnaseqGene/inst/doc/rnaseqGene.html
-#
+---
+output: word_document
+---
 
-#### Script Version 1.1 -----
+# Datos
 
-#### 3.3 - Instalando los paquetes requeridos -----------------------
-# Paquetes a instalar
-#install.packages(c("dplyr","tidyr","ggplot2","pheatmap",
-#"RColorBrewer","PoiClaClu","glmpca","ggbeeswarm"))
+```{r}
 
-
-
-# glmpca requiere R 3.6+
-
-### SI LA VERSION DE R < 3.5
-# Instalar paquetes de Bioconductor
-
-# source("https://bioconductor.org/biocManager.R")
-# BiocInstaller::biocManager(c("DESeq2", "vsn","apeglm","genefilter","IHW","edgeR"))
-
-
-### SI LA VERSION DE R >= 3.5
-
-install.packages("BiocManager")
-
-#BiocManager::install(version = "3.12", force = T)
-
-#BiocManager::install(c("DESeq2", "vsn","apeglm","genefilter","IHW", 'edgeR'), force = T)
-
-#Invocar bibliotecas 
-l=c("dplyr", 
-    "tidyr",
-    "ggplot2",
-    "pheatmap",
-    "RColorBrewer",
-    "PoiClaClu",
-    "glmpca",
-    "ggbeeswarm", 
-    "tidyr", 
-    "DESeq2")
-
-lapply(l, require, character.only = TRUE)
 
 
 ####3.4 - Crear un objeto DESeqDataSet a partir de la matriz de conteos y la tabla de muestras---- 
@@ -84,18 +40,19 @@ keep <- rowSums(counts(dds_dsx_all)) >= 10
 dds_dsx_work <- dds_dsx_all[keep,]
 nrow(dds_dsx_work)
 
-#### 4.2 - La transformaci?n estabilizadora de la varianza -----
 
-# Usando vst para estabilizar la varianza 
-# el nuevo objeto vsd tiene informaci?n equivalente a dds_dsx_work pero con los valores 
-# de conteos procesados para que tengan propiedades estad?sticas m?s manejables
+
 vsd <- vst(dds_dsx_work, blind = FALSE)
 
-#### 4.3 - Distancias entre muestras --------
 
-## Euclideas (con datos vsd)
-# Transponemos la tabla de conteos transformados porque dist espera muestras en filas
-sampleDists <- dist(t(assay(vsd)))
+```
+
+
+# Análisis
+
+
+```{r}
+
 
 library("pheatmap")
 library("RColorBrewer")
@@ -251,3 +208,15 @@ barplot(fractionSig, xlab = "mean normalized count", ylab = "fraction of small p
 #### 6.5 - Ponderaci?n de hip?tesis independiente
 library("IHW")
 res.ihw <- results(dds_dsx_work, filterFun=ihw)
+
+
+
+```
+
+
+
+
+
+
+
+
