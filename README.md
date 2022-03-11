@@ -25,4 +25,9 @@ Estructura del TP y comentarios:
 		Intro básica de elementos de R
 		Guía (hay que curarla para sacarle complejidad, hay varias cosas innecesarias)
 			COrregit strings de los filenames de entrada para matchear 'Conteos.csv' y 'Muestras.csv'
+
+
+
+cambios de prueba. Hope this works..
+
 		
