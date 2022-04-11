@@ -12,7 +12,7 @@ Estructura del TP y comentarios:
 		para ver intrones, exones, UTRs, splicing alternativo, etc...
 			(buscar de antemano posiciones en las que hayan ejemplos concretos de cada cosa)
 		BLAST y NCBI
-		FASTAs
+		FASTAs 
 			
 	Introducción al abordaje cuantitativo del análisis de RNAseq (mini-teórica que ya dí, mejorarla)
 		tablas de conteos
@@ -30,6 +30,7 @@ Estructura del TP y comentarios:
 
 
 Planteamiento para hablar con Lore y Eze:
+
 	Hacer primero un TP más clásico: 
 		Una guia con pasos de un pipeline de ejemplo, se hace en al aula y se van viendo los problemas sobre la marcha (de R o conceptuales).
 		En la guía de ejemplo se deberían mostrar:
