@@ -2,16 +2,14 @@
 output: word_document
 ---
 
-# Instalación y carga de los paquetes
+# Instalación de los paquetes
 
 En R, los *paquetes* son conjuntos de herramientas que desarrollaron otras personas y que están a disposición de la comunidad. En este trabajo vamos a usar diferentes paquetes para el *manejo*, *análisis* y *visualización* de datos. En particular, vamos a usar muchos paquetes pertenecientes a la familia de *Bioconductor* que, dentro del universo de R, incluye herramientas especializadas para el trabajo con datos de biología molecular (principalmente datos de secuencias).
 Para usar un paquete en R hay que realizar dos pasos: *instalarlo* (lo cual hacemos una única vez) e *importarlo* al espacio de trabajo de la sesión de R (lo cual repetimos cada vez que abramos el proyecto/script).
 
-## Instalación
+## Paquetes de Bioconductor
 
-### Paquetes de Bioconductor
-
-En función de la versión de R que tengamos instalada el acceso a las bibliotecas de Bioconductor se hace de una u otra manera. Para chequear nuestra versión de R tipeamos `version` en la consola:
+En función de la versión de R que tengamos instalada, el acceso a las bibliotecas de Bioconductor se hace de una u otra manera. Para chequear nuestra versión de R tipeamos `version` en la consola:
 ```{r}
 version
 ```
@@ -19,7 +17,7 @@ version
 En mi caso, la versión es `r paste0(version$major, '.', version$minor)`.
 
 ```{r, echo=F, eval=T}
-install.logic=FALSE
+install.logic=F
 ```
 
 Para instalar todos los paquetes de bioconductor que vamos a usar, primero guardamos sus nombres en un vector (`bioc.p`) usando la función para concatenar elementos (nombres en este caso) `c()`.
@@ -28,17 +26,22 @@ Para instalar todos los paquetes de bioconductor que vamos a usar, primero guard
 bioc.p=c("DESeq2", "vsn", "apeglm", "genefilter", "IHW", "edgeR")
 ```
 
-#### Si la versión de R es < 3.5
+
+
+### Si la versión de R es < 3.5
 
 ```{r, eval=install.logic}
 
-source("https://bioconductor.org/biocManager.R")
+if (as.numeric(version$minor)+as.numeric(version$major)>3.5) {
+  source("https://bioconductor.org/biocManager.R")
+  BiocInstaller::biocManager(bioc.p)
+}
 
-BiocInstaller::biocManager(bioc.p)
+
 
 ```
 
-#### Si la versión de R es > 3.5
+### Si la versión de R es > 3.5
 
 ```{r, eval=install.logic}
 install.packages("BiocManager")
@@ -49,9 +52,9 @@ BiocManager::install(bioc.p, force = T)
 
 ```
 
-### Otros paquetes
+## Otros paquetes
 
-Además de las herramientas específicas para trabajar con datos de secuencias, vamos a usar otras que sirven para, por ejemplo, manejar más facilmente las tablas de datos o generar gráficos elaborados.
+Además de las herramientas específicas para trabajar con datos de secuencias, vamos a usar otras que sirven para, por ejemplo, manejar más fácilmente las tablas de datos o generar gráficos elaborados.
 
 ```{r, eval=install.logic}
 
@@ -62,7 +65,9 @@ cran.p=c("dplyr", # manipulación de datos
          "RColorBrewer", # paletas de colores para los gráficos
          "PoiClaClu", # cálculo de distancias de Poisson
          #"glmpca",
-         "ggbeeswarm")
+         "ggbeeswarm", 
+         'gridExtra', 
+         'colorspace')
 
 new.packages=cran.p[!(cran.p %in% installed.packages()[,"Package"])]
 
@@ -73,27 +78,6 @@ if (length(new.packages)>0) {
 ```
 
 
-## importación
-
-Si la instalación de todo funcionó bien (no saltaron Errores), entonces podemos cargar los paquetes en la sesión de trabajo de R actual. A diferencia de la instalación, esta parte hay que correrla cada vez que abramos una nueva sesión en R.1
-
-```{r, warning=FALSE, message=FALSE, results='hide'}
-
-bioc.p=c("DESeq2", "vsn", "apeglm", "genefilter", "IHW", "edgeR")
-cran.p=c("dplyr", # manipulación de datos
-         "tidyr", # manipulación de datos
-         "ggplot2", # generación de gráficos
-         "pheatmap", # gráficos de mapas de calor
-         "RColorBrewer", # paletas de colores para los gráficos
-         "PoiClaClu", # cálculo de distancias de Poisson
-         #"glmpca",
-         "ggbeeswarm")
-
-lapply(c(cran.p, bioc.p), # para cada nombre de la lista de paquetes instalados...
-       require, # aplicar la función "require" para importarlo
-       character.only = TRUE) # (ignorar este argumento, es para las mañas de R)
-
-```
 
 
 
