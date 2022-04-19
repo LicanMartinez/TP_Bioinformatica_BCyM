@@ -46,4 +46,33 @@ Planteamiento para hablar con Lore y Eze:
 		Este sería el TP final que presentan
 		
 
-		
+
+Cronograma final de actividades:
+
+	1. 6 DE MAYO: TP4a -> Genómica y anotación
+		1.1 Introducción de anotación de genes
+			- Ejemplos prácticos en el aula (con el web apollo abierto y metiendo mano) para ver intrones, exones, UTRs, splicing alternativo, etc... (buscar de antemano posiciones en las que hayan ejemplos concretos de cada cosa)
+		1.2 BLAST y NCBI
+		1.3 FASTAs 
+
+
+	2. 13 DE MAYO: TP4b -> Genómica II
+		2.1 Introducción al abordaje cuantitativo del análisis de RNAseq (mini-teórica que ya dí, mejorarla)
+			- tablas de conteos
+			- correcciones por longitud de c/gen y por reads totales  de la corrida # VOLARLO, no se implementa en DESeq
+			- comparación estadística para GENES particulares # buscar genes por id en i5k o apollo
+			- PCA, heatmaps, custering y similitud de los patrones de expresión entre MUESTRAS
+
+	3. 27 DE MAYO: TP5 -> RNA-sec II + planteo del TP final.
+		3.1 Cómo se hacen estas cosas en R
+			Intro básica de elementos de R
+			Objetos, funciones, argumentos, paquetes
+		3.2 Guía análisis de RNA-sec(hay que curarla para sacarle complejidad, hay varias cosas innecesarias)
+			Corregir strings de los filenames de entrada para matchear 'Conteos.csv' y 'Muestras.csv'
+
+
+Materiales para las chicas:
+
+	1. Teórica de Lican.
+	3. Guía análisis de RNA-sec.
+	2. Guía "complementaria" ? "Guía R + conceptos básicos en bioinformática: BLAST, GEO, NCBI, FASTAs, etc".
