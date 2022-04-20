@@ -8,24 +8,23 @@ Instrucciones del repositorio:
 Estructura del TP y comentarios:
 
 	Introducción de anotación de genes
-		ejemplos prácticos en el aula (con el web apollo abierto y metiendo mano)
-		para ver intrones, exones, UTRs, splicing alternativo, etc...
-			(buscar de antemano posiciones en las que hayan ejemplos concretos de cada cosa)
+		Repaso de RNA-seq -> Presentación Licán.
+		Ver intrones, exones, UTRs, splicing alternativo, etc... (buscar genes piolas si hay tiempo)
 		BLAST y NCBI
 		FASTAs 
 			
 	Introducción al abordaje cuantitativo del análisis de RNAseq (mini-teórica que ya dí, mejorarla)
+	(seguir presentación de lican)
 		tablas de conteos
-		correcciones por longitud de c/gen y por reads totales  de la corrida # VOLARLO, no se implementa en DESeq
 		comparación estadística para GENES particulares # buscar genes por id en i5k o apollo
 		PCA, heatmaps, custering y similitud de los patrones de expresión entre MUESTRAS
 		
 		
 	Cómo se hacen estas cosas en R
-		Intro básica de elementos de R
-			Objetos, funciones, argumentos, paquetes
-		Guía (hay que curarla para sacarle complejidad, hay varias cosas innecesarias)
-			Corregir strings de los filenames de entrada para matchear 'Conteos.csv' y 'Muestras.csv'
+		Intro básica de elementos de R (ANEXO)
+			Objetos, funciones, argumentos, paquetes (ANEXO)
+	Guía Principal (hay que curarla para sacarle complejidad, hay varias cosas innecesarias)
+		
 			
 
 
@@ -49,26 +48,35 @@ Planteamiento para hablar con Lore y Eze:
 
 Cronograma final de actividades:
 
-	1. 6 DE MAYO: TP4a -> Genómica y anotación
-		1.1 Introducción de anotación de genes
-			- Ejemplos prácticos en el aula (con el web apollo abierto y metiendo mano) para ver intrones, exones, UTRs, splicing alternativo, etc... (buscar de antemano posiciones en las que hayan ejemplos concretos de cada cosa)
+	1. 6 DE MAYO: TP4a (PRE-TP4a) -> Transcriptómica y anotación (2 hs) (OFFLINE, EN AULA 9)
+		1.1 Introducción a transcriptomica:
+			- Teórica RNA-sec repaso ilúmina.
+			- Visualización para ver intrones, exones, UTRs, splicing alternativo, etc... (buscar de antemano posiciones en las que hayan ejemplos concretos de cada cosa EN APOLLO)
 		1.2 BLAST y NCBI
 		1.3 FASTAs 
-
-
-	2. 13 DE MAYO: TP4b -> Genómica II
-		2.1 Introducción al abordaje cuantitativo del análisis de RNAseq (mini-teórica que ya dí, mejorarla)
+		1.4 Introducción al abordaje cuantitativo del análisis de RNAseq (mini-teórica que ya dí, mejorarla)
 			- tablas de conteos
 			- correcciones por longitud de c/gen y por reads totales  de la corrida # VOLARLO, no se implementa en DESeq
 			- comparación estadística para GENES particulares # buscar genes por id en i5k o apollo
 			- PCA, heatmaps, custering y similitud de los patrones de expresión entre MUESTRAS
 
-	3. 27 DE MAYO: TP5 -> RNA-sec II + planteo del TP final.
-		3.1 Cómo se hacen estas cosas en R
-			Intro básica de elementos de R
-			Objetos, funciones, argumentos, paquetes
-		3.2 Guía análisis de RNA-sec(hay que curarla para sacarle complejidad, hay varias cosas innecesarias)
-			Corregir strings de los filenames de entrada para matchear 'Conteos.csv' y 'Muestras.csv'
+
+	2. 13 DE MAYO: TP4b (TP4-1° parte) -> Genómica II (POCO INTERNET, EN AULA 9 o enroque con el miércoles anterior.) TENER LA GUÍA LISTA PARA ESTA FECHA.
+		2.1 Teórica edu sobre los ontophagus taurus ? Si nó que la miren grabada. (suma el RNAi de dsx) (1 h + 15' de recreo para recuperarse del impacto)
+		2.2 Cómo se hacen estas cosas en R (ANEXO) (últimos 45' minutos)
+			Intro básica de elementos de R (ANEXO)
+			Objetos, funciones, argumentos, paquetes (ANEXO)
+		
+			
+
+	3. 27 DE MAYO: TP5 (TP4-2° parte)-> RNA-sec II + planteo del TP final. (MUCHO INTERNET, AULA A CONFIRMAR-POSÍBLEMENTE EN LABO BIO I O II)
+		3.1 Arrancar Guía análisis de RNA-sec(hay que curarla para sacarle complejidad, hay varias cosas innecesarias) - que vayan respondiendo preguntas presentes en la Guía.
+			3.1.1 VISUALIZACION
+			3.1.2 DE analisis clásico
+				3.1.2.1 Análisis de DE 
+				3.1.2.2 buscar genes en NCBI. (Posiblemente dárselos de tarea)
+			3.1.3 ir a buscar un gen conocido para ver si tiene DE ??
+		3.2 Proponer trabajo final.
 
 
 Materiales para las chicas:
