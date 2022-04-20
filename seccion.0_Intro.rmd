@@ -1,0 +1,37 @@
+---
+title: "Introducción TPs Bionformática"
+author: "Licán Martinez & Ezequiel Perez"
+date: " BCyM 2022"
+output: word_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+# 1. Conceptos básicos en bioinformática
+
+## 1.1 Los archivos FASTA
+
+## 1.2 El NCBI
+
+## 1.3 BLAST Y GEO
+
+
+# 2. El lenguage de programación R
+
+
+## 2.1 Instalación de R y de Rstudio
+
+## 2.2 Conceptos básicos del lenguage R
+
+## 2.3 Tipos de base de datos
+
+## 2.4 Indexación
+
+## 2.5 Loops y condicionales
+
+## 2.6 Materiales adicionales
+
+
