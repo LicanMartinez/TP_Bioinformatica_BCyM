@@ -21,16 +21,100 @@ knitr::opts_chunk$set(echo = TRUE)
 
 # 2. El lenguage de programación R
 
+Explicar resumídamente la historia del lenguage R, sus ventajas, desventajas y controversias.
 
 ## 2.1 Instalación de R y de Rstudio
 
-## 2.2 Conceptos básicos del lenguage R
+Todos los análisis que se presentan a continuación requieren el uso del entorno R. Es muy probable que ya tenga R instalado en su computadora, pero si no fuera así, o si es necesario actualizar la versión (recomendable).
+Para instalar o actualizar R, ir a https://cran.r-project.org/ y seleccionar el paquete base para su sistema operativo.
 
-## 2.3 Tipos de base de datos
+RStudio es un entorno que facilita las tareas de scripting y ejecución de R. Para instalar o actualizar R, ir a https://rstudio.com/products/rstudio/download/ y seleccionar RStudio Desktop, Open Source License.
 
-## 2.4 Indexación
+## 2.2 Sintáxis R
 
-## 2.5 Loops y condicionales
+Aprender un lenguaje de programación es como aprender un segundo idioma (sólo que más simple). Si visitamos un pais extranjero , podríamos aprender frases para salir del paso sin entender como está estructurado el lenguaje. De forma similar, si sólo queremos hacer un par de cosas con R (p. ej. dibujar gráficos), probablemente sea suficiente con estudiar a partir de unos cuantos ejemplos.
+
+Sin embargo, si lo que queremos es aprender realmente bien un nuevo lenguaje, tendremos que aprender su sintaxis y gramática: conjugación verbos, estructuras gramaticales, etc. Lo mismo es cierto para R: si queremos aprender a programar en R, tendremos que aprender la sintaxis y gramática.
+
+### 2.2.1 Expresiones 
+
+El código R está compuesto por una serie de expresiones. A continuación se muestran algunos ejemplos de cada una de estas expresiones.
+
+ - Expresiones aritméticas.
+ 
+```{r example 1}
+2 + 1   # suma
+2*6     # multiplicación
+2/4     # división
+3^3     # potencia
+120%%5  # resto de una división
+```
+
+ - Expresiones de asignación.
+ 
+Podemos crear nuevos "objetos" con el operador de asignación "<-" o también con "=". Todas las instrucciones de asignación dónde creamos objetos, tienen la misma forma:
+
+nombre_objeto <- valor
+ 
+```{r example 2}
+Orwell <- 1984
+Huxley = "A Happy World"
+
+# recuperando el valor de los objetos:
+Orwell
+Huxley
+
+```
+
+
+- Expresiones lógicas (ampliado en sección 2.2.3)
+
+```{r example 3}
+2 == 2   # en este caso usamos el "==" como símbolo de equivalencia, dado que el "=" esta apartado para la expresión de asignación.
+5 > 6
+
+BCyM <- "grandioso"
+BCyM == "aburrido"
+```
+
+
+ - Expresiones de contro: condicionales e iterativas (ampliado en sección 2.5)
+ 
+La expresión condicional evalua la veracidad de la expresión lógica entre paréntesis "if (EXP. LÓGICA)" y luego ejecuta el código del cuerpo "if" si "EXP. LÓGICA = TRUE" o del cuerpo "else" si ""EXP. LÓGICA = FALSE"
+ 
+```{r example 4}
+# Expresión condicional
+if (1 > 2) {"mayor"} else {"menor"}
+
+
+```
+
+La expresión iterativa "while" -itera- un bloque de código hasta que cierta expresión condicional se vuelve FALSE.
+La expresión iterativa "for" -itera- un bloque de código hasta que el objeto "i" haya pasado por todos los valores de un vector.
+ 
+```{r example 5}
+# Expresión iterativa while.
+i = 0
+while (i<4){
+  print(i)
+  i = i+1
+}
+
+# Expresión iterativa for.
+for (i in 1:4){
+  print(i)
+}
+
+```
+
+
+### 2.2.2 Funciones
+
+### 2.2.3 Tipos de datos
+
+## 2.4 Estructura de datos
+
+## 2.5 Estructuras de control
 
 ## 2.6 Materiales adicionales
 
