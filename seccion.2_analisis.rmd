@@ -4,7 +4,7 @@ output:
   pdf_document: default
 ---
 
-# Importación de *paquetes*
+## Importación de *paquetes*
 
 Si la instalación de todo funcionó bien (no saltaron Errores), entonces podemos cargar los paquetes en la sesión de trabajo de R actual. A diferencia de la instalación, esta parte hay que correrla cada vez que abramos una nueva sesión en R.
 
@@ -33,9 +33,9 @@ lapply(pckg.ls, # para cada nombre de la lista de paquetes instalados...
 ```
 
 
-# Importación y preparación de los datos
+## Importación y preparación de los datos
 
-## Tabla de conteos
+### Tabla de conteos
 
 La tabla de conteos tiene, en cada **celda**, el número de fragmentos de RNA secuenciados de cada *muestra* que fueron identificados como provenientes de cada *gen*. Por lo tanto, tiene tantas columnas como muestras hayamos utilizado como fuente de RNA, y tantas filas como genes para los cuales se registró el numero de fragmentos de RNA secuenciados.
 
@@ -43,23 +43,24 @@ La tabla de conteos tiene, en cada **celda**, el número de fragmentos de RNA se
 # importación
 cts <- read.delim("./Conteos.tsv", row.names = "gene")
 
-# dimensiones de la tabla
-dim(cts) %>% `names<-`(c('genes', 'muestras'))
-
 ```
-Podemos explorar las primeras filas y columnas para tener una idea de cómo se organiza esta tabla.
+Podemos explorar las primeras filas y columnas para tener una imágen de cómo se organiza esta tabla.
 
 ```{r}
 # filas de 1 a 10, columnas de 1 a 3
-cts[1:10, 1:3]
+cts[1:6, 1:3]
 
 ```
 
-Vemos que cada **fila** tiene el nombre asociado al gen correspondiente. `OTAU000001` no es el *nombre* de ese gen propiamente dicho, sino que es el identificador que se le asignó a esa región codificante en el genoma que estamos utilizando. Si queremos saber de qué gen se trata, podemos utilizar el explorador de genomas **(ver link a i5k)** para buscar esa región codificante, copiar la secuencia de la misma y buscar secuencias parecidas en una base de datos de genes (por ej. en NCBI). Esta búsqueda se realiza normalmente mediante el uso del algoritmo BLAST (*Basic Local Alignment Search Tool*).
-Por otra parte, en cada **columna** vemos un nombre asociado a la muestra de donde se sacó el RNA para secuenciar. Estos nombres tienen la información sobre el *diseño experimental*, es decir, el tratamiento con RNA de interferencia sobre dsx (ctrl/trat), el sexo (M/F), y el tejido (BRN/CHE/GEN/THE). `ctrlRNAi_M.BRN_S19` es una muestra del cerebro (BRN = brain) de un macho (M = male) al que no se le aplicó interferencia de RNA dirigida a dsx (ctrl) **¿Se aplicó RNAi ctrl? ¿Con qué secuencia?**.
+Vemos que cada **fila** tiene el nombre asociado al gen correspondiente. `OTAU000001` no es el *nombre* de ese gen propiamente dicho, sino que es el identificador que se le asignó a esa región codificante en el genoma que estamos utilizando.
+Por otra parte, en cada **columna** vemos un nombre asociado a la muestra de donde se sacó el RNA para secuenciar. Estos nombres tienen la información sobre el *diseño experimental*, es decir, el tratamiento con RNA de interferencia sobre dsx (ctrl/trat), el sexo (M/F), y el tejido (BRN/CHE/GEN/THE). `ctrlRNAi_M.BRN_S19` es una muestra del cerebro (BRN = brain) de un macho (M = male) al que no se le aplicó interferencia de RNA dirigida a dsx (ctrl).
 
 
-## Tabla de diseño experimental
+**¿Qué función/es de R podríamos utilizar para conocer la cantidad de genes y de muestras en estos datos? ¿Cuántos genes hay? ¿Y muestras?**
+
+
+
+### Tabla de diseño experimental
 
 Si bien los nombres de las columnas de la tabla de conteos tienen la información sobre el diseño experimental (tratamiento, sexo y tejido), esto es una fuente un poco "incómoda" para comparar los patrones de expresión entre grupos de forma programática. Para realizar análisis de comparación entre grupos, utilizamos una segunda tabla que tiene toda la información sobre las muestras bien ordenada.
 
@@ -73,7 +74,7 @@ samples <- read.csv("./Muestras_reord.tsv", row.names=1)
 
 ```
 
-Al igual que antes, podemos explorar la tabla visualmente filtrando solo algunas filas
+Al igual que antes, podemos explorar visualmente la tabla mostrando solo algunas filas
 ```{r}
 # filas de 1 a 8
 samples[1:8,]
@@ -82,35 +83,40 @@ samples[1:8,]
 ```
 
 
-### Ordenamiento y selección de muestras
+### Selección de muestras
+
+Para seleccionar el conjunto de muestras a utilizar, vamos a generar un `vector lógico` (de `TRUE`/`FALSE`) de 96 elementos (uno por cada muestra). La idea es que este vector tenga valores `T` en las posiciones de las muestras que queremos conservar para el análisis y `F` para aquellas que queremos descartar.
 
 ```{r}
-
-# idx.order=order(samples$Tissue, samples$Sex, samples$Treatment)
-# samples=samples[idx.order,]
-# samples=rbind(filter(samples, Tissue!='GEN'), 
-#               filter(samples, Tissue=='GEN'))
-
-# 
 
 tejidos=c('CHE', 'THE', 'BRN', 'GEN')
 sex=c('F', 'M')
 trat=c('ctr', 'dsx')
 
-idx.muestras= samples$Tissue %in% tejidos &
-  samples$Sex %in% sex &
-  samples$Treatment %in% trat
+idx.muestras= samples$Tissue %in% tejidos & # TRUE para las muestras pertenecientes (%in%) a los tejidos defeinidos (todos)
+  samples$Sex %in% sex & # TRUE para las muestras pertenecientes (%in%) a los sexos defeinidos (todos)
+  samples$Treatment %in% trat # TRUE para las muestras pertenecientes (%in%) a los tratamientos defeinidos (todas)
+
+```
+
+Corra la suigiente linea en la consola para ver cómo quedan asignados los valores `T`/`F` a cada muestra.
+
+```{r, eval=F, echo=T}
+
+cbind(samples[1:3], idx.muestras) 
 
 ```
 
 
-## Combinación en un único dataset
 
-Para usar la mayoría de herramientas de análisis de este TP es necesario combinar estas dos tablas en un único *objeto*. Para esto, tenemos que chequear que cada columna de la tabla de conteos sea asociable inequívocamente a una fila de la tabla de muestras.
+### Combinación en un único dataset
+
+Para usar la mayoría de herramientas de análisis de este TP es necesario combinar estas dos tablas en un único *objeto*. Para esto, primero tenemos que chequear que cada columna de la tabla de conteos sea asociable inequívocamente a la fila correspondiente en la tabla de muestras.
 
 ```{r}
 
 cts=cts[,rownames(samples)] # para corregir diferencias en el orden de las columnas-filas entre tablas
+
 all(rownames(samples) == colnames(cts)) # debe devolver TRUE
 
 ```
@@ -120,20 +126,24 @@ Una vez que chequeamos esto podemos unir ambas tablas en un tipo de objeto utili
 ```{r, warning=F}
 #objeto DESeqDataSet
 data_0 <- DESeqDataSetFromMatrix(countData = cts[,idx.muestras],
-                                       colData = samples[idx.muestras, c("Sex", "Tissue", "Treatment")],
-                                       design = ~  Sex + Tissue + Treatment)
+                                 colData = samples[idx.muestras, c("Sex", "Tissue", "Treatment")],
+                                 design = ~  Sex + Tissue + Treatment) 
+```
+
+Podemos explorar la información general de este tipo de objetos si lo corremos en la consola.
+
+```{r}
+data_0
 ```
 
 ## Filtrado del dataset
 
-Podemos descartar genes que tengan menos fragmentos secuenciados (reads) que un determinado umbral. Probar con diferentes valores.
+Podemos descartar genes que tengan una cantidad de fragmentos secuenciados (reads) por debajo de un determinado umbral.
 ```{r}
+# Probar con diferentes valores
 reads.minimos=100
 
-# bajo el umbral (muy pocos reads)
-c(rowSums(counts(data_0)) < reads.minimos ) %>% sum()
-
-# sobre el umbral (suficientes reads)
+# genes sobre el umbral (suficientes reads)
 c(rowSums(counts(data_0)) >= reads.minimos ) %>% sum()
 
 ```
@@ -148,48 +158,19 @@ nrow(data_filtered)
 
 ```
 
-# Exploración y análisis
+## Exploración y análisis
 
-## Comparación entre conjuntos de muestras 
+### Comparación de transcriptomas entre muestras
 
-### Heatmap
+Para comparar el patrón de transcripción entre muestras de diferentes condiciones (jejidos, sexos, etc.) conviene hacer alguna transformación de los valores de conteos para que aquellos genes con mayores niveles de expresión no "gobiernen" la estimación de similitud/iferencia entre transcriptomas completos. En este caso vamos a utilizar la transformación propuesta por Anders y Huber (2010,  *https://doi.org/10.1186/gb-2010-11-10-r106*) implementada en la función `vst`.
 
-
-#### Estabilización de la varianza
-
-```{r, fig.height=6.8, fig.width=8, dev='png', dpi=400, fig.align='center'}
-
+```{r}
 data_var.st=vst(data_filtered, blind = FALSE)
-
-heatmap.1.colors <- colorRampPalette( brewer.pal(9, "YlOrRd")[6:1] )(255)
-
-sampleDists <- dist(t(assay(data_var.st)))
-
-sampleDistMatrix <- as.matrix( sampleDists )
-
-rownames(sampleDistMatrix) <- rownames(samples)[idx.muestras]
-colnames(sampleDistMatrix) <- rownames(samples)[idx.muestras]
-
-pheatmap(sampleDistMatrix,
-         col = heatmap.1.colors, border_color = NA, 
-         fontsize_row = 4.5, fontsize = 11,
-         cluster_cols = F, cluster_rows = F,
-         annotation_col  = samples[idx.muestras,1:3], 
-         annotation_row  = samples[idx.muestras,1:3], 
-         show_colnames=F, show_rownames=T, 
-         annotation_names_row=F, legend = F, 
-         annotation_colors = list(Sex=c(M='slateblue2', F='hotpink1')[sex], 
-                                  Treatment=c(ctr='gray90', dsx='gray10')[trat], 
-                                  Tissue=c(BRN='dodgerblue', 
-                                           CHE='limegreen', 
-                                           GEN='darkgoldenrod2', 
-                                           THE='coral1')[tejidos]
-                                  ))
-
 ```
 
-### PCA
+#### PCA
 
+*Explicar PCA* (repaso pre-TP)
 
 ```{r, fig.height=5, fig.width=6, dev='png', dpi=300, fig.align='center'}
 pcaData <- plotPCA(data_var.st, 
@@ -231,34 +212,198 @@ ggplot(pcaData,
 
 ```
 
+#### Heatmap 
 
-# Análisis de expresión diferencial
+*Explicar Heatmaps* (repaso pre-TP)
+
+```{r, fig.height=6.8, fig.width=8, dev='png', dpi=400, fig.align='center'}
+
+
+
+heatmap.1.colors <- colorRampPalette( brewer.pal(9, "YlOrRd")[6:1] )(255)
+
+sampleDists <- dist(t(assay(data_var.st)))
+
+sampleDistMatrix <- as.matrix( sampleDists )
+
+rownames(sampleDistMatrix) <- rownames(samples)[idx.muestras]
+colnames(sampleDistMatrix) <- rownames(samples)[idx.muestras]
+
+pheatmap(sampleDistMatrix,
+         col = heatmap.1.colors, border_color = NA, 
+         fontsize_row = 4.5, fontsize = 11,
+         cluster_cols = F, cluster_rows = F,
+         annotation_col  = samples[idx.muestras,1:3], 
+         annotation_row  = samples[idx.muestras,1:3], 
+         show_colnames=F, show_rownames=T, 
+         annotation_names_row=F, legend = F, 
+         annotation_colors = list(Sex=c(M='slateblue2', F='hotpink1')[sex], 
+                                  Treatment=c(ctr='gray90', dsx='gray10')[trat], 
+                                  Tissue=c(BRN='dodgerblue', 
+                                           CHE='limegreen', 
+                                           GEN='darkgoldenrod2', 
+                                           THE='coral1')[tejidos]
+                                  ))
+
+```
+
+**¿Son coherentes los patrones de similitud y diferencia entre las muestras observados en el PCA y el Heatmap?**
+
+**¿Qué patrón prominente observa? ¿Hay algún factor (tejido, sexo, tratamiento) que determine más el perfil transcriptómico de una muestra que los otros factores?**
+
+
+### Análisis de expresión génica diferencial
+
+#### Análisis estadístico utilizando `DESeq`
+
+A continuación vamos a realizar un análisis estadístico de expresión diferencial. Este evalúa el grado de diferencia en el nivel de expresión de cada gen entre los diferentes niveles de cada factor especificado (tejido, sexo, tratamiento, etc.). Para este análisis, vamos a trabajar sólo con las muestras del tejido cefálico sin tratamiento con RNA de interferencia de *dsx*. El filtrado lo hacemos utilizando un vector lógico (`idx.muestras`) igual que antes.
+
+```{r, warning=F}
+
+tejidos=c('CHE')
+sex=c('F', 'M')
+trat=c('ctr')
+
+idx.muestras= samples$Tissue %in% tejidos &
+  samples$Sex %in% sex &
+  samples$Treatment %in% trat
+
+#objeto DESeqDataSet
+data.DE_0 <- DESeqDataSetFromMatrix(countData = cts[,idx.muestras],
+                                       colData = samples[idx.muestras, 
+                                                         c("Sex", "Tissue", "Treatment")],
+                                       design = ~  Sex)
+
+
+reads.minimos=10
+
+data_DE <- data.DE_0[rowSums(counts(data.DE_0)) >= reads.minimos,]
+
+# Cantidad de genes incluidos en el análisis
+nrow(data_DE)
+
+```
+Con estos datos filtrados utilizamos la función `DESeq` para estimar el nivel de expresión de cada gen a lo largo de las diferentes condiciones (puede tardar varios segundos en correr).
+
+```{r}
+de.an=DESeq(data_DE)
+```
+Con el resultado de esta estimación, podemos generar una tabla que muestre el grado de expresción diferencial para cada gen entre diferentes condiciones. Por defecto, la función `results` utiliza la fómula definida al crear el objeto `DESeqDataSet` para hacer las comparaciones, pero nosotros podemos especificar la comparación que deseemos mediante el argumento `contrast`.
 
 ```{r}
 
+res = results(de.an, contrast = c('Sex', 'M', 'F'))
 
-de.an=DESeq(data_filtered)
+head(as.data.frame(res), 5)
 
-de.an.var.st=DESeq(data_var.st)
+```
+
+Para cuantificar la magnitud del cambio en el nivel de expresión entre condiciones (Macho y Hembra en este caso, como se especifica en `contrast`) se suele utilizar el estadístico del *Log2FoldChange* (LFC). El valor del LFC representa cuántas veces se duplicó (o se redujo a la mitad) el conteo de reads mapeados a cada gen (nuestro estimador del nivel de expresión). Éste se calcula como 
+$$
+LFC = log_2 \left( \frac{E_M}{E_F} \right)
+$$
+Donde $E_M$ es el nivel de expresión en Machos y $E_F$ es el nivel de expresión en Hembras. De esta fórmula puede deducirse que, en este caso, el LFC toma valores positivos cuando $E_M > E_F$ y negativos cuando $E_M < E_F$. La relación está especificado en este sentido por el orden de `M` y `F` en el argumento `contrast` utilizado al generar la tabla de resutlados; si se invirtiera este orden entonces se invertiría el cociente de la ecuación anterior y, por lo tanto, el signo de los LFC. Además del signo, el valor específico del LFC nos dá información sobre la cantidad de cambio, correspondiendo cada unidad a un factor 2. Un $LFC=1$ significa que la expresión es el doble en machos que en hembras, un $LFC=-3$ indica que la expresión es 8 veces mayor en hembras que en machos.
+
+Para identificar los genes con mayor diferencias en su expresión vamos a reaordenar por |LFC| y filtrar por significancia estadística.
+
+
+```{r}
+
+res2=res[order(abs(res$log2FoldChange), decreasing = T),] %>% 
+  as.data.frame() %>% 
+  filter(padj<=0.05) %>% 
+  head()
+
+head(res2, 5)
+
+```
+
+#### Comparación gráfica utilizando `ggplot`
+
+También podemos hacer una comparación gráfica de los niveles de expresión de cada gen entre condiciones. Para esto, lo más correcto sería corregir/normalizar los valores de conteos por *tamaño de la librería*. Esto se debe a que durante la extrracción y preparación del RNA para la secuenciación, hay errores de procedimiento que generan variaciones en la cantidad de RNA entre muestras que nada tienen que ver con diferencias en el nivel de expresión. Por lo tanto, conviene relativizar el conteo de cada gen de una muestra respecto de la cantidad total de reads que se obtuvieron de la misma.
+Las siguientes lineas hacen esa normalización.
+
+```{r}
+
+cts.trans=cts %>% 
+  as.matrix() %>% 
+  t() 
+
+cts.trans.norm=cts.trans/(samples$lib.size/1e7)
+
+cts.norm=t(cts.trans.norm) %>% 
+  as.data.frame()
+
+```
+
+Ahora, con esta tabla de conteos normalizados podemos graficar los niveles de expresion de los genes con mayores diferencias entre sexos. Para ello primero reorganizamos un poco las tablas.
+
+```{r}
+
+topgenes.n=2 # cantidad de genes a considerar
+
+genes=rownames(res2)[1:topgenes.n] # nombres de estos genes
+
+genes.exp=cts.norm[genes,] %>% # extracción de estos genes de la tabla de conteos
+  t() # verticalización para poder juntar con la tabla del diseño experimental
+
+exp.table=cbind(samples, genes.exp) # unión con la tabla de diseño
+
+exp.table.long=pivot_longer(exp.table, cols = -c(1:5), 
+             names_to = 'gene', values_to = 'exp') # verticalización
 
 
 ```
 
+Y filtramos sólo aquellos datos que nos interesa graficar. Por ahora sólo queresmo comparar la expresión de los dos genes de interés entre los tejidos cefálicos de machos y hembras control.
+
+```{r}
+data.plot= as.data.frame(exp.table.long) %>% # cambiamo a CLASS data.frame para trabajar con filter()
+         filter(Treatment %in% trat) %>% # filtramos por tratamiento (sólo ctr)
+         filter(Tissue %in% tejidos) # filtramos por tejido (sólo CHR)) 
+
+```
+
+Ahora le pasamos esta tabla a `ggplot`, una función del paquete `ggplot2` que permite generar gráficos controlando de forma precisa, y relativamente simple, muchos parámetros gráficos. Notesé que la generación del gráfico comienza con el llamado de la función `ggplot(data.plot)`, seguida de múltiples funciones que se van sumando con `+` para agregar elementos o configuraciones al gráfico.
+
+```{r, fig.height=4, fig.width=5, dev='png', dpi=300, fig.align='center'}
+
+ggplot(data= data.plot) +  # datos en los que ggplot buscará lo que le ordenemos en la progrmación del gráfico
+  
+  # generamos un elemento (geom) de puntos
+  geom_jitter(aes(x=Sex, y=exp, # la posición de cada punto codificará el nivel de expresión en función del sexo
+                  fill=Sex), # el relleno de los puntos también codificará el sexo
+              width = 0.2, # ancho de la dispersión horizontal aleatoria (para que no se solapen tanto)
+             pch=21, # estilo de punto
+             size=3, # tamaño de los puntos
+             alpha=0.5)+ # transparencia (0 - 1)
+  
+  scale_fill_manual(values = c(M='slateblue2', F='hotpink1'))+ # colores de cada sexo
+  
+  facet_grid(gene~., # desdoblamos el gráfico verticalmente, uno para cada gen
+             scales = 'free')+ # cada panel puede tener su propia escala
+  
+  labs(x=NULL, y='Expresión')+ # títulos de ejes
+  
+  theme_bw() # estética general del gráfico
+
+
+```
+
+**¿Es este gráfico coherente con los sentidos de cambio de expresión indicados por el signo de los valores de LFC? Justifique**
+
+#### Investigación sobre genes diferencialmente expressados
+
+
+Busque los dos genes con mayor diferencias en su expresión (entre las regiones de los cuernos cefálicos de machos y hembras) en el *Apollo Browser* (https://i5k.nal.usda.gov/node/739225). Para esto copie los códigos (`OTAU0...`) de los primeros dos nombres de fila de la tabla `res2` (recordemos que esta contiene lo mismo que `res` pero está ordenada por LFC y filtrada por significancia estadística). Para buscar el modelo correspondiente a cada gen, pegue el código en el buscador del browser Apollo y complete con `-RA` al final. Esto se debe a que la base de datos de Apollo almacena los modelos de genes de *O. taurus* con el sufijo `-RA`.
+En el panel de la izquierda, active los tracks  `O. taurus M PD1 BRN+CHE+THE+GEN transcripts`   y   `O. taurus F PD1 BRN+CHE+THE+GEN transcripts`  para ver los perfiles de *coverage*
+**¿Son las diferencias de covergae coherentes con los valores de LFC y el gráfico de expresión? Justifique**
 
 
 
-## Estabilización de la varianza
-
-El tipo de herramientas estadísticas que vamos a utilizar para buscar patrones de expresión génica diferencial requiere que los datos cumplan ciertas propiedades. En particular, 
 
 
-
-
-
-
-
-
-
+Cuando identifique el modelo correspondiente, selecciónelo clickeando en un intron. Luego *click derecho* -> *View details*. Scrollee hasta la primer secuencia, selecciónela con soble click y cópiela en un archivo de texto. Esta corresopnde a la secuencia **genómica** del modelo, es decir, contiene los intrones.
 
 
 
