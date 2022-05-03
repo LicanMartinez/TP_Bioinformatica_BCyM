@@ -1,24 +1,33 @@
 ---
-output: word_document
+# title: "Guía de instalación de R y dependencias para el Trabajo Práctico 4"
+# author: "Biología Celuar y Molecular"
+# date: "2022"
+output:
+  word_document: default
+  pdf_document: default
 ---
 
-# Instalación de los paquetes
+## Instalación de R 4
 
-En R, los *paquetes* son conjuntos de herramientas que desarrollaron otras personas y que están a disposición de la comunidad. En este trabajo vamos a usar diferentes paquetes para el *manejo*, *análisis* y *visualización* de datos. En particular, vamos a usar muchos paquetes pertenecientes a la familia de *Bioconductor* que, dentro del universo de R, incluye herramientas especializadas para el trabajo con datos de biología molecular (principalmente datos de secuencias).
-Para usar un paquete en R hay que realizar dos pasos: *instalarlo* (lo cual hacemos una única vez) e *importarlo* al espacio de trabajo de la sesión de R (lo cual repetimos cada vez que abramos el proyecto/script).
+Para utilizar el lenguaje de programación R debemos tenerlo instalado en nuestro sistema. Si nunca utilizó R en su equipo, entonces debe descargarlo e instalarlo. El código de este trabajo práctico fue probado en la versión de R 4.0. Esto no significa que no vaya a funcionar con versiones anteriores, pero hay más probabilidad de incompatibilidades. Si ya ha utilizado R en su equipo, compruebe que la versión sea al menos mas reciente que 4.0. Para chequear su versión de R tipee `version` en la consola y córralo con *Enter*:
 
-## Paquetes de Bioconductor
-
-En función de la versión de R que tengamos instalada, el acceso a las bibliotecas de Bioconductor se hace de una u otra manera. Para chequear nuestra versión de R tipeamos `version` en la consola:
 ```{r}
 version
 ```
 
-En mi caso, la versión es `r paste0(version$major, '.', version$minor)`.
+Si su versión de R es < 4, **o si nunca utilizó R en su equipo**, descargue e instale la versión R 4.0 desde el siguiente link: https://cran.r-project.org/bin/windows/base/old/4.0.0/ . Cuando haya finalizado la descarga del instalador (R-4.0.0-win.exe) ejecútelo.
 
-```{r, echo=F, eval=T}
-install.logic=F
-```
+## Instalación de Rstudio
+
+Para trabajar con R, conviene además instalar un software que nos permita: mejorar la interacción con el código (su lectura y escritura), visualizar resultados (por ej. tablas y gráficos), manejar archivos de trabajo, entre otras funciones. El programa más usado para esto normalmente es Rstudio, y es el que vamos a utilizar por defecto en este trabajo. Para descargar e instalar Rstudio vaya al siguiente link: rstudio.com/products/rstudio/download/ . Descargue e instale la versión gratuita.
+Si en su equipo se había instalado alguna versión de R anterior a la versión 4, entonces es posible que sea necesario especificarle a Rstudio qué versión debe utilizar. Para ello vaya a la pestaña *Tools / Global options...*. En el apartado de *R Sessions* confirme que la versión seleccionada es algo del estilo `C:\Program Files\R\R-4.0.4`. Si está seleccionada una versión anterior a R 4 entonces cámbiela a esta última mediante la opción *Change...*.
+
+## Instalación de los paquetes
+
+Una vez que tengamos R funcionando, vamos a necesitar instalar una serie de *paquetes* para poder realziar el Trabajo Práctico. En R, los paquetes son conjuntos de herramientas que desarrollaron otras personas y que están a disposición de la comunidad. En este trabajo vamos a usar diferentes paquetes para el *manejo*, *análisis* y *visualización* de datos. En particular, vamos a usar muchos paquetes pertenecientes a la familia de *Bioconductor* que, dentro del universo de R, incluye herramientas especializadas para el trabajo con datos de biología molecular (principalmente datos de secuencias).
+Para usar un paquete en R hay que realizar dos pasos: *instalarlo* (lo cual hacemos una única vez) e *importarlo* al espacio de trabajo de la sesión de R (lo cual repetimos cada vez que abramos el proyecto/script).
+
+### Paquetes de Bioconductor
 
 Para instalar todos los paquetes de bioconductor que vamos a usar, primero guardamos sus nombres en un vector (`bioc.p`) usando la función para concatenar elementos (nombres en este caso) `c()`.
 
@@ -26,47 +35,39 @@ Para instalar todos los paquetes de bioconductor que vamos a usar, primero guard
 bioc.p=c("DESeq2", "vsn", "apeglm", "genefilter", "IHW", "edgeR")
 ```
 
+Luego descargamos el paquete BiocManager que va a gestionar la instalación de todos estos paqeutes de Bioconducor.
+
+```{r, eval=F}
+
+# primero se instala el paquete BiocManager que usaremos para descargar otros paquetes 
+# (sí, R es un caos de paquetes)
+install.packages("BiocManager") 
+
+# descargamos los paquetes que espcificamos anteriormente en la lista bioc.p
+BiocManager::install(version = "3.12", force = T)
+BiocManager::install(bioc.p, force = T)
+
+```
 
 
-### Si la versión de R es < 3.5
+#### Si la versión de R es < 3.5
 
-```{r, eval=install.logic}
+En caso de que haya tenido problemas con la actualización de R, y su versión sea menor a 3.5, puede probar las siguientes lineas en vez de las que se corrieron anteriormente.
 
-<<<<<<< HEAD
-if (install.logic) {
-  source("https://bioconductor.org/biocManager.R")
+```{r, eval=F}
+
+source("https://bioconductor.org/biocManager.R")
 
 BiocInstaller::biocManager(bioc.p)
-}
-=======
-if (as.numeric(version$minor)+as.numeric(version$major)>3.5) {
-  source("https://bioconductor.org/biocManager.R")
-  BiocInstaller::biocManager(bioc.p)
-}
-
-
-
->>>>>>> main
-```
-
-### Si la versión de R es > 3.5
-
-```{r, eval=install.logic}
-if (install.logic) {
-  install.packages("BiocManager")
-
-BiocManager::install(version = "3.12", force = T)
-
-BiocManager::install(bioc.p, force = T)
-}
 
 ```
 
-## Otros paquetes
 
-Además de las herramientas específicas para trabajar con datos de secuencias, vamos a usar otras que sirven para, por ejemplo, manejar más fácilmente las tablas de datos o generar gráficos elaborados.
+### Otros paquetes
 
-```{r, eval=install.logic}
+Además de las herramientas específicas para trabajar con datos de secuencias, vamos a usar otras que sirven para, por ejemplo, manejar más fácilmente las tablas de datos o generar gráficos elaborados. Nuevamente, definimos una lsita de nombres
+
+```{r, eval=T}
 
 cran.p=c("dplyr", # manipulación de datos
          "tidyr", # manipulación de datos
@@ -79,6 +80,12 @@ cran.p=c("dplyr", # manipulación de datos
          'gridExtra', 
          'colorspace')
 
+```
+
+Que instalamos corriendo las siguientes lineas.
+
+```{r, eval=F}
+
 new.packages=cran.p[!(cran.p %in% installed.packages()[,"Package"])]
 
 if (length(new.packages)>0) {
@@ -87,226 +94,4 @@ if (length(new.packages)>0) {
 
 ```
 
-
-
-
-# Datos
-
-```{r}
-
-
-
-####3.4 - Crear un objeto DESeqDataSet a partir de la matriz de conteos y la tabla de muestras---- 
-
-#!!! Es fundamental que las columas de la matriz de conteos y las filas de las
-# muestras est?n en el mismo orden.
-
-#Leer tabla de conteos
-dsxCts <- read.delim("Conteos.tsv", row.names = "gene")
-
-#Leer la tabla de informaci?n sobre las muestras, y seleccionar variables de inter?s
-dsxSamples <- read.delim("Muestras.tsv", sep="\t", row.names=1)
-dsxColdata <- dsxSamples[,c("Tissue","Treatment","Sex","individual")]
-
-#Verificar que todas las muestras de la tabla est?n presentes con el mismo nombre en la matriz
-all(rownames(dsxColdata) %in% colnames(dsxCts)) # Debe devolver "TRUE"
-all(rownames(dsxColdata) == colnames(dsxCts)) # Debe devolver "TRUE"
-
-#Creamos el objeto DESeqDataSet
-dds_dsx_all <- DESeqDataSetFromMatrix(countData = dsxCts,
-                                       colData = dsxColdata,
-                                       design = ~ Tissue + Sex + Treatment)
-
-
-#### 4.1- Prefiltrando el conjunto de datos ---------------
-#Filtramos para remover genes con conteos muy bajos (<1)
-nrow(dds_dsx_all)
-keep <- rowSums(counts(dds_dsx_all)) > 1
-
-#Filtramos para remover genes con conteos muy bajos (<10)
-keep <- rowSums(counts(dds_dsx_all)) >= 10
-dds_dsx_work <- dds_dsx_all[keep,]
-nrow(dds_dsx_work)
-
-
-
-vsd <- vst(dds_dsx_work, blind = FALSE)
-
-
-```
-
-
-# Análisis
-
-
-```{r}
-
-
-library("pheatmap")
-library("RColorBrewer")
-
-#Preparamos la matriz de datos, le asignamos nombres a cada muestra, y corremos el heatmap
-# la matriz tiene en cada celda el valor de distancia entre el par de muestras fila-clumna
-
-sampleDistMatrix <- as.matrix( sampleDists )
-rownames(sampleDistMatrix) <- paste((vsd)$Tissue, (vsd)$Sex,  (vsd)$Treatment, sep = " - " )
-colnames(sampleDistMatrix) <- NULL
-colors <- colorRampPalette( rev(brewer.pal(9, "Blues")) )(255)
-pheatmap(sampleDistMatrix,
-         clustering_distance_rows = sampleDists,
-         clustering_distance_cols = sampleDists,
-         col = colors, fontsize = 7)
-
-## De Poisson (con conteos crudos)
-library("PoiClaClu")
-#Primero transponemos los conteos dds_dsx_work
-poisd <- PoissonDistance(t(counts(dds_dsx_work)))
-
-#Trazamos el mapa de calor en una figura a continuaci?n
-samplePoisDistMatrix <- as.matrix( poisd$dd )
-rownames(samplePoisDistMatrix) <- paste((vsd)$Tissue, (vsd)$Sex,  (vsd)$Treatment, sep = " - " )
-colnames(samplePoisDistMatrix) <- NULL
-pheatmap(samplePoisDistMatrix,
-         clustering_distance_rows = poisd$dd,
-         clustering_distance_cols = poisd$dd,
-         col = colors, fontsize = 7)
-
-
-
-#### 4.4 - Visualizando distancias entre muestras usando Componentes Principales ------
-#Visualizacion usando plotPCA 
-plotPCA(vsd, intgroup = c("Tissue", "Sex", "Treatment"))
-
-# (Opcional) Visualizacion usando ggplot (m?s complicado pero m?s personalizable)
-#Volcamos los datos de plotPCA a un objeto
-pcaData <- plotPCA(vsd, intgroup = c("Tissue", "Sex", "Treatment"), returnData = TRUE)
-percentVar <- round(100 * attr(pcaData, "percentVar"))
-SexTreatment <-with(pcaData, paste(Sex,Treatment,sep="-"))
-ggplot(pcaData, aes(x = PC1, y = PC2, color = SexTreatment, shape = Tissue)) +
-  geom_point(size =3) +
-  xlab(paste0("PC1: ", percentVar[1], "% variance")) +
-  ylab(paste0("PC2: ", percentVar[2], "% variance")) +
-  coord_fixed() +
-  ggtitle("PCA with VST data")
-
-#### 5 - Analisis de Expresion Diferencial ------------
-
-####5.1 - Correr analisis general (compara tratamiento control vs dsx RNAi)----
-dds_dsx_work <- estimateSizeFactors(dds_dsx_work)
-dds_dsx_work <- DESeq(dds_dsx_work)
-
-####5.2 - Construyendo la tabla de resultados-----
-
-res <- results(dds_dsx_work, contrast=c("Treatment","dsx","ctr"))
-
-#Resumen del testeo estadistico
-summary(res)
-
-#Ajustando los umbrales de p-valores
-res.05 <- results(dds_dsx_work, alpha = 0.05)
-table(res.05$padj < 0.05)
-
-# y de log-fold-change
-resLFC1 <- results(dds_dsx_work, lfcThreshold=1)
-table(resLFC1$padj < 0.1)
-
-#### 5.3 - Otras comparaciones -----
-
-# Contrastes espec?ficos
-
-summary(results(dds_dsx_work, contrast = c("Tissue", "BRN", "CHE")))
-
-#### 5.4 - Testeos m?ltiples ----
-
-#Vamos a seleccionar solo aquellos genes con un p ajustado <0.1
-resSig <- subset(res, padj < 0.1)
-
-# Ordemamos por log-fold-chanche de menor a mayor
-# (con head vemos solo las primears filas)
-filas=5 # elegimos la cantidad de filas
-
-head(resSig[ order(resSig$log2FoldChange), ], filas)
-
-# y de mayor a menor
-head(resSig[ order(resSig$log2FoldChange, decreasing = TRUE), ], filas)
-
-#### 6 - Graficando los resultados -------------
-
-#### 6.1 - Gr?fico de conteos -------
-#Calculamos resultados para el contraste entre cerebro y epitelio cef?lico
-brn_che_res <- results(dds_dsx_work, contrast = c("Tissue", "BRN", "CHE"))
-#Buscamos el nombre del gen con valor m'as bajo de p ajustado 
-topGene <- rownames(brn_che_res)[which.min(brn_che_res$padj)]
-#Usamos plotCounts para mostrar los conteos normalizados para ese gen
-plotCounts(dds_dsx_work, gene = topGene, intgroup=c("Tissue"), pch=16)
-
-#Haciendo graficos personalizados usando ggplot2
-library("ggbeeswarm")
-geneCounts <- plotCounts(dds_dsx_work, gene = topGene, intgroup = c("Tissue","Sex","Treatment"),
-                         returnData = TRUE)
-ggplot(geneCounts, aes(x = Tissue, y = count, color = Sex, shape = Treatment)) +
-  geom_beeswarm (cex = 2.5, alpha=0.7, size=3)+scale_y_log10()+
-  ggtitle(topGene)
-
-#### 6.2 - Gr?ficos MA -----
-
-#Primero, reducimos los log2fold changes
-
-#library("apeglm")
-#res <- lfcShrink(dds_dsx_work, coef="Treatment_dsx_vs_ctr", type="apeglm")
-#plotMA(res, ylim = c(-2, 2))
-
-#Equivalente sin usar lfcShrink
-res.noshr <- results(dds_dsx_work, name="Treatment_dsx_vs_ctr")
-plotMA(res.noshr, ylim = c(-2, 2))
-
-#Etiquetando genes particulares en el gr?fico MA
-plotMA(res.noshr, ylim = c(-2,2))
-topGene <- rownames(res.noshr)[which.min(res.noshr$padj)]
-with(res.noshr[topGene, ], {
-  points(baseMean, log2FoldChange, col="dodgerblue", cex=2, lwd=2)
-  text(baseMean, log2FoldChange, topGene, pos=2, col="dodgerblue")
-})
-
-#Histograma de p values
-hist(res$pvalue[res$baseMean > 1], breaks = 0:50/50,
-     col = "grey50", border = "white")
-
-####6.3 - Clustering de genes -----
-library("genefilter")
-
-#Seleccionamos los 20 genes m?s variables
-topVarGenes <- head(order(rowVars(assay(vsd)), decreasing = TRUE), 20)
-
-#y armamos un heatmap
-mat  <- assay(vsd)[ topVarGenes, ]
-mat  <- mat - rowMeans(mat)
-anno <- as.data.frame(colData(vsd)[, c("Tissue","Sex","Treatment")])
-pheatmap(mat, annotation_col = anno, fontsize_col = 6)
-
-#### 6.4 - Filtrado independiente ------
-
-# Usando la tabla resLFC1 generada previamente
-qs <- c(0, quantile(resLFC1$baseMean[resLFC1$baseMean > 0], 0:6/6))
-bins <- cut(resLFC1$baseMean, qs)
-levels(bins) <- paste0("~", round(signif((qs[-1] + qs[-length(qs)])/2, 2)))
-fractionSig <- tapply(resLFC1$pvalue, bins, function(p) mean(p < .05, na.rm = TRUE))
-barplot(fractionSig, xlab = "mean normalized count", ylab = "fraction of small p values")
-
-#### 6.5 - Ponderaci?n de hip?tesis independiente
-library("IHW")
-res.ihw <- results(dds_dsx_work, filterFun=ihw)
-
-
-
-```
-
-
-
-
-
-
-
-
-
-
+Si llegó hasta acá sin morir en el intento, felicitaciones! Sobrevivió a la tarea más tediosa y desgastante de la bioinformática, que es la instalación de *cosas*. Ahora sí, ya puede utilizar el código de la guía para seguir el Trabajo Práctico.

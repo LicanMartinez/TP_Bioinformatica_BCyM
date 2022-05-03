@@ -6,7 +6,7 @@ output:
 
 ## Importación de *paquetes*
 
-Si la instalación de todo funcionó bien (no saltaron Errores), entonces podemos cargar los paquetes en la sesión de trabajo de R actual. A diferencia de la instalación, esta parte hay que correrla cada vez que abramos una nueva sesión en R.
+Si la instalación de todo funcionó, entonces podemos cargar los paquetes en la sesión de trabajo de R actual. A diferencia de la instalación, esta parte hay que correrla cada vez que abramos una nueva sesión en R.
 
 ```{r, warning=FALSE, message=FALSE, results='hide'}
 
@@ -18,10 +18,10 @@ pckg.ls=c("DESeq2", "vsn", "apeglm", "genefilter", "IHW", "edgeR", # análiis de
          "pheatmap", # gráficos de mapas de calor
          "RColorBrewer", # paletas de colores para los gráficos
          "PoiClaClu", # cálculo de distancias de Poisson
-         #"glmpca",
          "ggbeeswarm", 
-         'gridExtra', 
-         'colorspace')
+         'gridExtra', # múltiplies gráficos en un único panel
+         'colorspace' # configuraciones de color
+         )
 
 # E importamos los paquetes de esa lista
 
@@ -37,7 +37,7 @@ lapply(pckg.ls, # para cada nombre de la lista de paquetes instalados...
 
 ### Tabla de conteos
 
-La tabla de conteos tiene, en cada **celda**, el número de fragmentos de RNA secuenciados de cada *muestra* que fueron identificados como provenientes de cada *gen*. Por lo tanto, tiene tantas columnas como muestras hayamos utilizado como fuente de RNA, y tantas filas como genes para los cuales se registró el numero de fragmentos de RNA secuenciados.
+La tabla de conteos tiene, en cada **celda**, el número de fragmentos de RNA secuenciados de cada *muestra* que fueron identificados como provenientes de cada *gen*. Por lo tanto, tiene tantas *columnas* como muestras hayamos utilizado como fuente de RNA, y tantas *filas* como genes para los cuales se registró el numero de fragmentos de RNA secuenciados.
 
 ```{r}
 # importación
@@ -47,28 +47,32 @@ cts <- read.delim("./Conteos.tsv", row.names = "gene")
 Podemos explorar las primeras filas y columnas para tener una imágen de cómo se organiza esta tabla.
 
 ```{r}
-# filas de 1 a 10, columnas de 1 a 3
+# filas de 1 a 6, columnas de 1 a 3
 cts[1:6, 1:3]
 
 ```
 
-Vemos que cada **fila** tiene el nombre asociado al gen correspondiente. `OTAU000001` no es el *nombre* de ese gen propiamente dicho, sino que es el identificador que se le asignó a esa región codificante en el genoma que estamos utilizando.
+Vemos que cada **fila** tiene el nombre asociado al gen correspondiente. `OTAU000001` no es el *nombre* de un gen propiamente dicho, sino que es el identificador que se le asignó a esa región codificante en el genoma que estamos utilizando.
 Por otra parte, en cada **columna** vemos un nombre asociado a la muestra de donde se sacó el RNA para secuenciar. Estos nombres tienen la información sobre el *diseño experimental*, es decir, el tratamiento con RNA de interferencia sobre dsx (ctrl/trat), el sexo (M/F), y el tejido (BRN/CHE/GEN/THE). `ctrlRNAi_M.BRN_S19` es una muestra del cerebro (BRN = brain) de un macho (M = male) al que no se le aplicó interferencia de RNA dirigida a dsx (ctrl).
 
 
 **¿Qué función/es de R podríamos utilizar para conocer la cantidad de genes y de muestras en estos datos? ¿Cuántos genes hay? ¿Y muestras?**
 
 
-
 ### Tabla de diseño experimental
 
-Si bien los nombres de las columnas de la tabla de conteos tienen la información sobre el diseño experimental (tratamiento, sexo y tejido), esto es una fuente un poco "incómoda" para comparar los patrones de expresión entre grupos de forma programática. Para realizar análisis de comparación entre grupos, utilizamos una segunda tabla que tiene toda la información sobre las muestras bien ordenada.
+Si bien los nombres de las columnas de la tabla de conteos tienen la información sobre el diseño experimental (tratamiento, sexo y tejido), esta es una fuente un poco incómoda para comparar los patrones de expresión entre grupos de forma programática. Para realizar análisis de comparación entre grupos, utilizamos una segunda tabla que tiene toda la información sobre las muestras de forma más ordenada.
+
+```{r, echo=F, eval=F, include=F}
+# generación del archivo con las filas ordenadas
+# not run or shown in render
+samples0 <- read.delim("./Muestras.tsv", sep="\t", row.names=1)
+samples <- samples0[,c(5, 6, 4, 2, 13)]
+samples=dplyr::rename(samples, lib.size=genome_unique)
+```
+
 
 ```{r}
-
-#samples0 <- read.delim("./Muestras.tsv", sep="\t", row.names=1)
-#samples <- samples0[,c(5, 6, 4, 2, 13)]
-#samples=dplyr::rename(samples, lib.size=genome_unique)
 
 samples <- read.csv("./Muestras_reord.tsv", row.names=1)
 
@@ -76,12 +80,12 @@ samples <- read.csv("./Muestras_reord.tsv", row.names=1)
 
 Al igual que antes, podemos explorar visualmente la tabla mostrando solo algunas filas
 ```{r}
-# filas de 1 a 8
+# filas de 1 a 8, todas las columnas
 samples[1:8,]
 
-# (por ahora ignoremos la última columna de lib.size)
 ```
 
+**¿A qué cree que hace referencia la útima columna?**
 
 ### Selección de muestras
 
@@ -103,11 +107,9 @@ Corra la suigiente linea en la consola para ver cómo quedan asignados los valor
 
 ```{r, eval=F, echo=T}
 
-cbind(samples[1:3], idx.muestras) 
+cbind(samples, idx.muestras) 
 
 ```
-
-
 
 ### Combinación en un único dataset
 
@@ -130,7 +132,7 @@ data_0 <- DESeqDataSetFromMatrix(countData = cts[,idx.muestras],
                                  design = ~  Sex + Tissue + Treatment) 
 ```
 
-Podemos explorar la información general de este tipo de objetos si lo corremos en la consola.
+Podemos explorar la información general de este objeto si corremos su nombre en la consola.
 
 ```{r}
 data_0
@@ -139,6 +141,7 @@ data_0
 ## Filtrado del dataset
 
 Podemos descartar genes que tengan una cantidad de fragmentos secuenciados (reads) por debajo de un determinado umbral.
+
 ```{r}
 # Probar con diferentes valores
 reads.minimos=100
