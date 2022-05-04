@@ -157,7 +157,7 @@ reads.minimos=10
 data_filtered <- data_0[rowSums(counts(data_0)) >= reads.minimos,]
 
 # Cantidad de genes finales
-nrow(data_filtered)
+n.genes=nrow(data_filtered)
 
 ```
 
@@ -165,17 +165,32 @@ nrow(data_filtered)
 
 ### Comparación de transcriptomas entre muestras
 
-Para comparar el patrón de transcripción entre muestras de diferentes condiciones (jejidos, sexos, etc.) conviene hacer alguna transformación de los valores de conteos para que aquellos genes con mayores niveles de expresión no "gobiernen" la estimación de similitud/iferencia entre transcriptomas completos. En este caso vamos a utilizar la transformación propuesta por Anders y Huber (2010,  *https://doi.org/10.1186/gb-2010-11-10-r106*) implementada en la función `vst`.
+A continuación, vamos a realizar una comparación general de los transcriptomas de todas las muestras. Recuerde que cada muestra cuenta, para cada gen, con un nivel de expresión determinado (el cual aproximamos con el número de lecturas de RNAseq que mapearon sobre ese gen). Por lo tanto, podemos considerar que cada muestra está en una determinada posición en cada uno de los `r n.genes` ejes definidos por el conjunto de genes.
+
+![](./imagenes/3d_space_genes.expression.png)
+
+### Estabilización de la varianza (marco teórico **opcional**)
+
+Más allá de las diferencias de expresión de cada gen *entre muestras*, es esperable que los niveles basales de expresión de cada gen sean diferentes entre sí. Es decir, que haya genes que tengan, en todas las muestras, mayores niveles de expresión que otros genes. Un problema de esto es que genes con mayor expresión tienen a su vez mayor *varianza* entre muestras. Imaginemos que tenemos un gen **A** con un nivel de expresión de 100 y un gen **B** con un nivel de 10.000. En este caso, variaciones en el nivel de expresión (entre muestras) del 10 % generarían diferencias de +/- 10 para el gen A y +/- 1000 para el gen B. Por lo tanto, a la hora de calcular *distancias* entre muestras (ver figura anterior), estas estarían gobernadas por los genes con mayores niveles de expresión, despreciando la información contenida en las diferencias de expresión de genes con niveles basales muy bajos.
+Para sortear este problema, y poder comparar muestras en función de todo su transcriptoma de forma representativa, se suelen realizar transformaciones de los datos que *estabilicen* la varianza. Esto significa que los valores de conteos ya no son los reales, pero conservan la información de las diferencias entre muestras como para hacer las comparaciones de transcriptomas completos. En este caso vamos a utilizar la transformación propuesta por Anders y Huber (2010,  *https://doi.org/10.1186/gb-2010-11-10-r106*) implementada en la función `vst`.
 
 ```{r}
 data_var.st=vst(data_filtered, blind = FALSE)
 ```
 
-#### PCA
+**Nota:** *como los conteos de cada gen han sido modificados, este dataset transformado no puede ser utilizado para comparar la expresión de cada gen particular entre muestras. Sólo lo vamos a utilizar para comparar entre transcriptomas completos.*
 
-*Explicar PCA* (repaso pre-TP)
+#### Análisis de Componentes Principales (PCA)
 
-```{r, fig.height=5, fig.width=6, dev='png', dpi=300, fig.align='center'}
+A continuación, vamos a visualizar la configuración de las muestras en el *espacio* de variables definido por los niveles de expresión de cada gen. Como este espacio tiene demasiadas dimensiones (`r n.genes`) vamos a realizar una reducción dimensional mediante la proyección de la "sombra" de cada punto (correspondiente al transcriptoma de una muestra) sobre un plano de 2 dimensiones (Componentes Principales).
+
+![](./imagenes/proyeccion.sombra.png)
+
+Primero usamos la función `plotPCA` para generar el nuevo plano 2D sobre el que proyectar los puntos, y guardamos los datos de las nuevas coordenadas en el objeto `pcaData`.
+
+```{r}
+
+# cálculo de las nuevas dimensiones (proyección sobre dos componentes principales)
 pcaData <- plotPCA(data_var.st, 
                    intgroup = c("Tissue", "Sex", "Treatment"), 
                    returnData = TRUE)
@@ -183,8 +198,13 @@ percentVar <- round(100 * attr(pcaData, "percentVar"))
 
 pcaData$tt=paste0(pcaData$Tissue, '-', pcaData$Treatment)
 
+```
 
-# colores para los puntos (es bastante vueltero esto así que ignorar)
+Ahora generamos un gráfico de puntos donde se vean las posiciones de cada muestra en este nuevo sistema de coordenadas. 
+Primero hay que dar un poco de vueltas para configurar los colores de los puntos para cada grupo de muestras. Esto es medio enroscado así que puede saltar al siguiente bloque de código.
+
+```{r}
+# Configuración de los colores de los puntos 
 colores=c(BRN='dodgerblue', 
                CHE='limegreen', 
                GEN='darkgoldenrod2', 
@@ -197,56 +217,97 @@ colores.ctrl=colorspace::darken(colores.trat, 0.4)
 names(colores.ctrl)=paste0(tejidos, '-ctr')
 
 colores2=c(colores.trat, colores.ctrl)
+```
 
-# gráfico de PCA
-ggplot(pcaData, 
-       aes(x = PC1, y = PC2, fill = tt)) +
-  geom_point(size =2.5, shape=23) +
+Una vez configurados los colores, podemos hacer el gráfico de PCA. Para esto vamos a utilizar el paquete `ggplot2`, que contiene una gran cantidad de funciones que nos permiten controlar de forma precisa los distintos aspectos de un gráfico. La comprensión de la sintaxis de `ggplot` va más allá del alcance de este TP pero, de forma **opcional**, puede tratar de comprender cómo se relacionan las diferentes partes en el siguiente código. Nótese que no hay una única función que contenga todo el código dentro de sus paréntesis, sino que los objetos y/o configuraciones se van agregando con diferentes funciones de forma secuencial mediante el operador `+`.
+
+```{r, fig.height=5, fig.width=6, dev='png', dpi=300, fig.align='center', results='hide'}
+
+# Generación inicial del gráfico
+ggplot(pcaData, # datos de entrada
+       
+       # aspectos del gráfico a ser mapeados a valores de variables presentes en los datos
+       aes(x = PC1, # posición en X
+           y = PC2, # posición en Y
+           fill = tt)) + # color de relleno
+  
+  # Recién acá le indicamos que queremos dibujar puntos sobre el gráfico.
+  geom_point(size =2.5, shape=23) + 
+  # Sus coordenadas y colores van a ser definidos por el mapeo especificado en aes().
+  # Tamaño y forma son especificados fuera de aes() ya que, en este caso, 
+  #     no dependen de variables de los datos
+  
+  # Especificación del conjunto de colores y su leyenda
   scale_fill_manual(values = colores2, 
                     name=' ctr    dsx', 
                     labels=c(rep('', length(tejidos)), tejidos))+
+  
+  guides(fill=guide_legend(ncol=2)) +
+  
+  # titulos de ejes
   xlab(paste0("PC1: ", percentVar[1], "%")) +
   ylab(paste0("PC2: ", percentVar[2], "%")) +
-  coord_fixed() +
-  ggtitle("")+
-  facet_grid(Sex~.)+
-  theme_bw()+
-  guides(fill=guide_legend(ncol=2))
+  
+  facet_grid(Sex ~ .)+ # ¿?
+  
+  theme_bw() # estética
 
 ```
 
+**Opcional: ¿Qué cree que hace la función `facet_grid()`? ¿Qué cree que pasaría si en vez de `Sex ~ .` el argumento fuera `. ~ Sex`?**
+
+**¿Qué patrón de similitud/diferencia entre grupos de muestras observa?**
+
 #### Heatmap 
 
-*Explicar Heatmaps* (repaso pre-TP)
+A continuación vamos a utilizar otra técnica de visualización para comparar muestras en cuanto a sus transcriptomas: los mapas de calor (o *Heatmaps*). Estos son básicamente representaciones gráficas de *matrices de distancias*. Una matriz de distancias es una tabla en la que cada elemento $d_{ij}$ corresponde a la distancia entre la observación i y la observación j. En este caso, utilizamos la acepción más literal de distancia (distancia "en linea recta"), por lo que $d_{ij} = d_{ji}$; es decir, la matriz es simétrica sobre su diagonal.
+Para generar nuestro mapa de calor, primero vamos a calcular la matriz de distancias con la función `dist`.
 
-```{r, fig.height=6.8, fig.width=8, dev='png', dpi=400, fig.align='center'}
-
-
-
-heatmap.1.colors <- colorRampPalette( brewer.pal(9, "YlOrRd")[6:1] )(255)
-
+```{r}
+# cálculo de distancias
 sampleDists <- dist(t(assay(data_var.st)))
 
+# transformación del tipo de objeto R (class: dist -> matrix)
 sampleDistMatrix <- as.matrix( sampleDists )
 
+# homologar nombres de filas y columnas
 rownames(sampleDistMatrix) <- rownames(samples)[idx.muestras]
 colnames(sampleDistMatrix) <- rownames(samples)[idx.muestras]
 
+sampleDistMatrix[1:4, 1:4] # ver primeras 4 filas y 4 columnas
+```
+**¿Qué dimensiones espera que tenga esta matriz de distancias?**
+
+**¿Cómo se explican los valores de la diagonal?**
+
+Ahora, con esta matriz de distancias vamos a generar un mapa de calor con la función `pheatmap` para poder interpretarla más facilmente de forma visual.
+
+```{r, fig.height=6.8, fig.width=8, dev='png', dpi=400, fig.align='center', results='hide'}
+# çonfiguración de la paleta de colores
+heatmap.1.colors <- colorRampPalette( brewer.pal(9, "YlOrRd")[6:1] )(255)
+
 pheatmap(sampleDistMatrix,
          col = heatmap.1.colors, border_color = NA, 
-         fontsize_row = 4.5, fontsize = 11,
-         cluster_cols = F, cluster_rows = F,
-         annotation_col  = samples[idx.muestras,1:3], 
-         annotation_row  = samples[idx.muestras,1:3], 
-         show_colnames=F, show_rownames=T, 
-         annotation_names_row=F, legend = F, 
-         annotation_colors = list(Sex=c(M='slateblue2', F='hotpink1')[sex], 
-                                  Treatment=c(ctr='gray90', dsx='gray10')[trat], 
+         fontsize_row = 4.5, fontsize = 11, # tamaño de las letras
+         cluster_cols = F, cluster_rows = F, # mantener el orden de filas y columnas
+         annotation_col  = samples[idx.muestras,1:3], # información para el código de anotación por colores de columnas
+         annotation_row  = samples[idx.muestras,1:3], # información para el código de anotación por colores de filas 
+         show_colnames=F, show_rownames=T, # nombres de muestras en filas
+         annotation_names_row=F, legend = F, # mostrar qué significa cada color
+         
+         # configuración de los colores de cada grupo de muestras
+         annotation_colors = list(Sex=c(M='slateblue2', 
+                                        F='hotpink1')[sex], 
+                                  
+                                  Treatment=c(ctr='gray90', 
+                                              dsx='gray10')[trat], 
+                                  
                                   Tissue=c(BRN='dodgerblue', 
                                            CHE='limegreen', 
                                            GEN='darkgoldenrod2', 
                                            THE='coral1')[tejidos]
-                                  ))
+                                  )
+         )
 
 ```
 
@@ -263,15 +324,17 @@ A continuación vamos a realizar un análisis estadístico de expresión diferen
 
 ```{r, warning=F}
 
+# subconjunto de muestras
 tejidos=c('CHE')
 sex=c('F', 'M')
 trat=c('ctr')
 
+# índice T/F de muestras que pertenecen al subconjunto especificado
 idx.muestras= samples$Tissue %in% tejidos &
   samples$Sex %in% sex &
   samples$Treatment %in% trat
 
-#objeto DESeqDataSet
+# objeto DESeqDataSet (conteos + información de muestras)
 data.DE_0 <- DESeqDataSetFromMatrix(countData = cts[,idx.muestras],
                                        colData = samples[idx.muestras, 
                                                          c("Sex", "Tissue", "Treatment")],
@@ -288,16 +351,17 @@ nrow(data_DE)
 ```
 Con estos datos filtrados utilizamos la función `DESeq` para estimar el nivel de expresión de cada gen a lo largo de las diferentes condiciones (puede tardar varios segundos en correr).
 
-```{r}
+```{r, results='hide'}
 de.an=DESeq(data_DE)
 ```
 Con el resultado de esta estimación, podemos generar una tabla que muestre el grado de expresción diferencial para cada gen entre diferentes condiciones. Por defecto, la función `results` utiliza la fómula definida al crear el objeto `DESeqDataSet` para hacer las comparaciones, pero nosotros podemos especificar la comparación que deseemos mediante el argumento `contrast`.
 
 ```{r}
+res = results(de.an, contrast = c('Sex', 'M', 'F')) %>% 
+  as.data.frame() %>% 
+  select(-c(4:5)) # borrar algunas columans que no son de interés
 
-res = results(de.an, contrast = c('Sex', 'M', 'F'))
-
-head(as.data.frame(res), 5)
+head(res, 5)
 
 ```
 
@@ -305,19 +369,19 @@ Para cuantificar la magnitud del cambio en el nivel de expresión entre condicio
 $$
 LFC = log_2 \left( \frac{E_M}{E_F} \right)
 $$
-Donde $E_M$ es el nivel de expresión en Machos y $E_F$ es el nivel de expresión en Hembras. De esta fórmula puede deducirse que, en este caso, el LFC toma valores positivos cuando $E_M > E_F$ y negativos cuando $E_M < E_F$. La relación está especificado en este sentido por el orden de `M` y `F` en el argumento `contrast` utilizado al generar la tabla de resutlados; si se invirtiera este orden entonces se invertiría el cociente de la ecuación anterior y, por lo tanto, el signo de los LFC. Además del signo, el valor específico del LFC nos dá información sobre la cantidad de cambio, correspondiendo cada unidad a un factor 2. Un $LFC=1$ significa que la expresión es el doble en machos que en hembras, un $LFC=-3$ indica que la expresión es 8 veces mayor en hembras que en machos.
+Donde $E_M$ es el nivel de expresión en Machos y $E_F$ es el nivel de expresión en Hembras. De esta fórmula puede deducirse que, en este caso, el LFC toma valores positivos cuando $E_M > E_F$ y negativos cuando $E_M < E_F$. La relación está especificado en este sentido por el orden de `M` y `F` en el argumento `contrast` utilizado al generar la tabla de resutlados; si se invirtiera este orden entonces se invertiría el cociente de la ecuación anterior y, por lo tanto, el signo de los LFC. Además del signo, el valor específico del LFC nos dá información sobre la cantidad de cambio, correspondiendo cada unidad a un factor 2. Es decir, un $LFC=1$ significa que la expresión es el *doble* en machos que en hembras; un $LFC=-3$ indica que la expresión es *8 veces mayor* en hembras que en machos.
 
-Para identificar los genes con mayor diferencias en su expresión vamos a reaordenar por |LFC| y filtrar por significancia estadística.
+Para identificar los genes con mayor diferencias en su expresión vamos a reordenar por |LFC| y filtrar por significancia estadística de estas diferencias.
 
 
 ```{r}
 
-res2=res[order(abs(res$log2FoldChange), decreasing = T),] %>% 
-  as.data.frame() %>% 
-  filter(padj<=0.05) %>% 
+res2=res[order(abs(res$log2FoldChange), decreasing = T),] %>% # re-ordenamiento
+  as.data.frame() %>% # llevar a formato (class) data.frame
+  filter(padj<=0.05) %>% # filtrar por significancia (p-valor < 0.05)
   head()
 
-head(res2, 5)
+res2
 
 ```
 
