@@ -374,14 +374,14 @@ Donde $E_M$ es el nivel de expresión en Machos y $E_F$ es el nivel de expresió
 Para identificar los genes con mayor diferencias en su expresión vamos a reordenar por |LFC| y filtrar por significancia estadística de estas diferencias.
 
 
-```{r}
+```{r, results='hide'}
 
 res2=res[order(abs(res$log2FoldChange), decreasing = T),] %>% # re-ordenamiento
   as.data.frame() %>% # llevar a formato (class) data.frame
-  filter(padj<=0.05) %>% # filtrar por significancia (p-valor < 0.05)
-  head()
+  filter(padj<=0.05) # filtrar por significancia (p-valor < 0.05)
 
-res2
+
+print(head(res2))
 
 ```
 
@@ -392,22 +392,33 @@ Las siguientes lineas hacen esa normalización.
 
 ```{r}
 
+# se pasa a clase "matrix" y se transpone la tabla (se acuesta) para normalizar por columnas
 cts.trans=cts %>% 
   as.matrix() %>% 
   t() 
 
-cts.trans.norm=cts.trans/(samples$lib.size/1e7)
+# vector de tamaños de librerías (en unidades de 10 millones)
+norm.vec=(samples$lib.size/1e7)
 
+# normalización por columnas (dividir la matriz por el vector)
+# Nota: en R esto es al reves que en las operaciones matriciales de algebra, 
+#       donde los vectores se aplican sobre las filas
+cts.trans.norm=cts.trans/norm.vec
+
+# vuelvo a parar la tabla y trandofrmarla en data.frame
 cts.norm=t(cts.trans.norm) %>% 
   as.data.frame()
 
 ```
 
-Ahora, con esta tabla de conteos normalizados podemos graficar los niveles de expresion de los genes con mayores diferencias entre sexos. Para ello primero reorganizamos un poco las tablas.
+```{r}
+topgenes.n=5 # cantidad de genes a considerar
+```
+
+
+Ahora, con esta tabla de conteos normalizados podemos graficar los niveles de expresion de los `r topgenes.n` genes con mayores diferencias entre sexos. Para ello primero reorganizamos un poco las tablas.
 
 ```{r}
-
-topgenes.n=2 # cantidad de genes a considerar
 
 genes=rownames(res2)[1:topgenes.n] # nombres de estos genes
 
@@ -433,14 +444,15 @@ data.plot= as.data.frame(exp.table.long) %>% # cambiamo a CLASS data.frame para 
 
 Ahora le pasamos esta tabla a `ggplot`, una función del paquete `ggplot2` que permite generar gráficos controlando de forma precisa, y relativamente simple, muchos parámetros gráficos. Notesé que la generación del gráfico comienza con el llamado de la función `ggplot(data.plot)`, seguida de múltiples funciones que se van sumando con `+` para agregar elementos o configuraciones al gráfico.
 
-```{r, fig.height=4, fig.width=5, dev='png', dpi=300, fig.align='center'}
+```{r, fig.height=5, fig.width=3, dev='png', dpi=300, fig.align='center'}
 
 ggplot(data= data.plot) +  # datos en los que ggplot buscará lo que le ordenemos en la progrmación del gráfico
   
   # generamos un elemento (geom) de puntos
   geom_jitter(aes(x=Sex, y=exp, # la posición de cada punto codificará el nivel de expresión en función del sexo
                   fill=Sex), # el relleno de los puntos también codificará el sexo
-              width = 0.2, # ancho de la dispersión horizontal aleatoria (para que no se solapen tanto)
+              width = 0.05,  # ancho de la dispersión horizontal aleatoria (para que no se solapen tanto)
+              height = 0,
              pch=21, # estilo de punto
              size=3, # tamaño de los puntos
              alpha=0.5)+ # transparencia (0 - 1)
@@ -448,6 +460,12 @@ ggplot(data= data.plot) +  # datos en los que ggplot buscará lo que le ordenemo
   scale_fill_manual(values = c(M='slateblue2', F='hotpink1'))+ # colores de cada sexo
   
   facet_grid(gene~., # desdoblamos el gráfico verticalmente, uno para cada gen
+             labeller = labeller(gene = paste0(
+               # título de cada panel
+             genes, '
+LFC = ', res$log2FoldChange[rownames(res) %in% genes] %>% round(2)) %>% 
+               `names<-`(genes))
+               ,
              scales = 'free')+ # cada panel puede tener su propia escala
   
   labs(x=NULL, y='Expresión')+ # títulos de ejes
@@ -456,6 +474,56 @@ ggplot(data= data.plot) +  # datos en los que ggplot buscará lo que le ordenemo
 
 
 ```
+
+
+```{r para diapositiva, echo=F, include=F, fig.width=8, fig.height=3}
+
+# este codigo es para una diapo, ignorar
+
+topgenes.n=10 # cantidad de genes a considerar
+
+genes.2=rownames(res)[c(2, 3, 7:9)] # nombres de estos genes
+
+genes.2=c(genes.2, rownames(res2)[1:2])
+
+genes.exp.2=cts.norm[genes.2,] %>% # extracción de estos genes de la tabla de conteos
+  t() # verticalización para poder juntar con la tabla del diseño experimental
+
+exp.table.2=cbind(samples, genes.exp.2) # unión con la tabla de diseño
+
+exp.table.long.2=pivot_longer(exp.table.2, cols = -c(1:5), 
+             names_to = 'gene', values_to = 'exp')
+
+exp.table.long.2$Treatment[exp.table.long.2$Treatment=='dsx']='trat'
+
+
+data.plot.2 = as.data.frame(exp.table.long.2) %>% # cambiamo a CLASS data.frame para trabajar con filter()
+         # filter(Treatment %in% trat) %>% # filtramos por tratamiento (sólo ctr)
+         filter(Tissue %in% tejidos) %>%  # filtramos por tejido (sólo CHR)) 
+  filter(Sex=='F')
+
+ggplot(data= data.plot.2) +  # datos en los que ggplot buscará lo que le ordenemos en la progrmación del gráfico
+  
+  # generamos un elemento (geom) de puntos
+  geom_jitter(aes(x=Treatment, y=exp, # la posición de cada punto codificará el nivel de expresión en función del sexo
+                  fill=Treatment), # el relleno de los puntos también codificará el sexo
+              width = 0.2, # ancho de la dispersión horizontal aleatoria (para que no se solapen tanto)
+             pch=21, # estilo de punto
+             size=3, # tamaño de los puntos
+             alpha=0.5)+ # transparencia (0 - 1)
+  
+  scale_fill_manual(values = c(ctr='grey95', trat='black'))+ # colores de cada sexo
+  
+  facet_grid(.~gene, # desdoblamos el gráfico verticalmente, uno para cada gen
+             scales = 'free')+ # cada panel puede tener su propia escala
+  
+  labs(x=NULL, y='Expresión')+ # títulos de ejes
+  
+  theme_bw() # estética general del gráfico
+
+
+```
+
 
 **¿Es este gráfico coherente con los sentidos de cambio de expresión indicados por el signo de los valores de LFC? Justifique**
 
