@@ -1,0 +1,94 @@
+---
+title: "Guía de instalación de R y dependencias para el Trabajo Práctico 4"
+author: "Biología Celuar y Molecular"
+date: "2022"
+output:
+  pdf_document: default
+---
+
+# Instalación de R 4
+
+Para utilizar el lenguaje de programación R debemos tenerlo instalado en nuestro sistema. Si nunca utilizó R en su equipo, entonces debe descargarlo e instalarlo. El código de este trabajo práctico fue probado en la versión de R 4.0. Esto no significa que no vaya a funcionar con versiones anteriores, pero hay más probabilidad de incompatibilidades. Si ya ha utilizado R en su equipo, compruebe que la versión sea al menos mas reciente que 4.0. Para chequear su versión de R tipee `version` en la consola y córralo con *Enter*:
+
+```{r, purl=F}
+version
+```
+
+Si su versión de R es < 4, **o si nunca utilizó R en su equipo**, descargue e instale la versión R 4.0 desde el siguiente link: https://cran.r-project.org/bin/windows/base/old/4.0.0/ . Cuando haya finalizado la descarga del instalador (R-4.0.0-win.exe) ejecútelo.
+
+# Instalación de Rstudio
+
+Para trabajar con R, conviene además instalar un software que nos permita: mejorar la interacción con el código (su lectura y escritura), visualizar resultados (por ej. tablas y gráficos), manejar archivos de trabajo, entre otras funciones. El programa más usado para esto normalmente es Rstudio, y es el que vamos a utilizar por defecto en este trabajo. Para descargar e instalar Rstudio vaya al siguiente link: rstudio.com/products/rstudio/download/ . Descargue e instale la versión gratuita.
+Si en su equipo se había instalado alguna versión de R anterior a la versión 4, entonces es posible que sea necesario especificarle a Rstudio qué versión debe utilizar. Para ello vaya a la pestaña *Tools / Global options...*. En el apartado de *R Sessions* confirme que la versión seleccionada es algo del estilo `C:\Program Files\R\R-4.0.4`. Si está seleccionada una versión anterior a R 4 entonces cámbiela a esta última mediante la opción *Change...*.
+
+# Instalación de los paquetes
+
+Una vez que tengamos R funcionando, vamos a necesitar instalar una serie de *paquetes* para poder realziar el Trabajo Práctico. En R, los paquetes son conjuntos de herramientas que desarrollaron otras personas y que están a disposición de la comunidad. En este trabajo vamos a usar diferentes paquetes para el *manejo*, *análisis* y *visualización* de datos. En particular, vamos a usar muchos paquetes pertenecientes a la familia de *Bioconductor* que, dentro del universo de R, incluye herramientas especializadas para el trabajo con datos de biología molecular (principalmente datos de secuencias).
+Para usar un paquete en R hay que realizar dos pasos: *instalarlo* (lo cual hacemos una única vez) e *importarlo* al espacio de trabajo de la sesión de R (lo cual repetimos cada vez que abramos el proyecto/script).
+
+## Paquetes de Bioconductor
+
+Para instalar todos los paquetes de bioconductor que vamos a usar, primero guardamos sus nombres en un vector (`bioc.p`) usando la función para concatenar elementos (nombres en este caso) `c()`.
+
+```{r}
+# nombres de los paquetes de Bioconductor que vamos a instalar
+bioc.p=c("DESeq2", "vsn", "apeglm", "genefilter", "IHW", "edgeR")
+```
+
+Luego descargamos el paquete BiocManager que va a gestionar la instalación de todos estos paqeutes de Bioconducor.
+
+```{r, eval=F}
+
+# primero se instala el paquete BiocManager que usaremos para descargar otros paquetes 
+# (sí, R es un caos de paquetes)
+install.packages("BiocManager") 
+
+# descargamos los paquetes que espcificamos anteriormente en la lista bioc.p
+BiocManager::install(version = "3.12", force = T)
+BiocManager::install(bioc.p, force = T)
+
+```
+
+
+### Si la versión de R es < 3.5
+
+En caso de que haya tenido problemas con la actualización de R, y su versión sea menor a 3.5, puede probar las siguientes lineas en vez de las que se corrieron anteriormente.
+
+```{r, eval=F, purl=F}
+
+source("https://bioconductor.org/biocManager.R")
+
+BiocInstaller::biocManager(bioc.p)
+
+```
+
+
+## Otros paquetes
+
+Además de las herramientas específicas para trabajar con datos de secuencias, vamos a usar otras que sirven para, por ejemplo, manejar más fácilmente las tablas de datos o generar gráficos elaborados. Nuevamente, definimos una lsita de nombres
+
+```{r, eval=T}
+
+cran.p=c("dplyr", # manipulación de datos
+         "tidyr", # manipulación de datos
+         "ggplot2", # generación de gráficos
+         "pheatmap", # gráficos de mapas de calor
+         "RColorBrewer", # paletas de colores para los gráficos
+         'gridExtra', 
+         'colorspace')
+
+```
+
+Que instalamos corriendo las siguientes lineas.
+
+```{r, eval=F}
+
+new.packages=cran.p[!(cran.p %in% installed.packages()[,"Package"])]
+
+if (length(new.packages)>0) {
+  install.packages(new.packages)
+}
+
+```
+
+Si llegó hasta acá sin morir en el intento, felicitaciones! Sobrevivió a la tarea más tediosa y desgastante de la bioinformática, que es la instalación de *cosas*. Ahora sí, ya puede utilizar el código de la guía para seguir el Trabajo Práctico.
