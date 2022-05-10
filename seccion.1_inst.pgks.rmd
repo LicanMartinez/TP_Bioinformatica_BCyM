@@ -11,7 +11,7 @@ output:
 
 Para utilizar el lenguaje de programación R debemos tenerlo instalado en nuestro sistema. Si nunca utilizó R en su equipo, entonces debe descargarlo e instalarlo. El código de este trabajo práctico fue probado en la versión de R 4.0. Esto no significa que no vaya a funcionar con versiones anteriores, pero hay más probabilidad de incompatibilidades. Si ya ha utilizado R en su equipo, compruebe que la versión sea al menos mas reciente que 4.0. Para chequear su versión de R tipee `version` en la consola y córralo con *Enter*:
 
-```{r}
+```{r, purl=F}
 version
 ```
 
@@ -32,6 +32,7 @@ Para usar un paquete en R hay que realizar dos pasos: *instalarlo* (lo cual hace
 Para instalar todos los paquetes de bioconductor que vamos a usar, primero guardamos sus nombres en un vector (`bioc.p`) usando la función para concatenar elementos (nombres en este caso) `c()`.
 
 ```{r}
+# nombres de los paquetes de Bioconductor que vamos a instalar
 bioc.p=c("DESeq2", "vsn", "apeglm", "genefilter", "IHW", "edgeR")
 ```
 
@@ -54,7 +55,7 @@ BiocManager::install(bioc.p, force = T)
 
 En caso de que haya tenido problemas con la actualización de R, y su versión sea menor a 3.5, puede probar las siguientes lineas en vez de las que se corrieron anteriormente.
 
-```{r, eval=F}
+```{r, eval=F, purl=F}
 
 source("https://bioconductor.org/biocManager.R")
 
@@ -74,9 +75,6 @@ cran.p=c("dplyr", # manipulación de datos
          "ggplot2", # generación de gráficos
          "pheatmap", # gráficos de mapas de calor
          "RColorBrewer", # paletas de colores para los gráficos
-         "PoiClaClu", # cálculo de distancias de Poisson
-         #"glmpca",
-         "ggbeeswarm", 
          'gridExtra', 
          'colorspace')
 

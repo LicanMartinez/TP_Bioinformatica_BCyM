@@ -8,17 +8,17 @@ output:
 
 Si la instalación de todo funcionó, entonces podemos cargar los paquetes en la sesión de trabajo de R actual. A diferencia de la instalación, esta parte hay que correrla cada vez que abramos una nueva sesión en R.
 
-```{r, warning=FALSE, message=FALSE, results='hide'}
+```{r Carga de librerías, warning=FALSE, message=FALSE, results='hide'}
 
 # Definimos la lista de nombres de los paquetes que R va a llamar
 
-pckg.ls=c("DESeq2", "vsn", "apeglm", "genefilter", "IHW", "edgeR", # análiis de datos moleculares
+pckg.ls=c("DESeq2", "vsn", "apeglm", "genefilter", "IHW", "edgeR", # análiis de datos moleculares (bioconductor)
          "dplyr", "tidyr", # manipulación de datos
          "ggplot2", # generación de gráficos
          "pheatmap", # gráficos de mapas de calor
          "RColorBrewer", # paletas de colores para los gráficos
-         "PoiClaClu", # cálculo de distancias de Poisson
-         "ggbeeswarm", 
+         # "PoiClaClu", # cálculo de distancias de Poisson
+         # "ggbeeswarm", 
          'gridExtra', # múltiplies gráficos en un único panel
          'colorspace' # configuraciones de color
          )
@@ -63,7 +63,7 @@ Por otra parte, en cada **columna** vemos un nombre asociado a la muestra de don
 
 Si bien los nombres de las columnas de la tabla de conteos tienen la información sobre el diseño experimental (tratamiento, sexo y tejido), esta es una fuente un poco incómoda para comparar los patrones de expresión entre grupos de forma programática. Para realizar análisis de comparación entre grupos, utilizamos una segunda tabla que tiene toda la información sobre las muestras de forma más ordenada.
 
-```{r, echo=F, eval=F, include=F}
+```{r, echo=F, eval=F, include=F, purl=F}
 # generación del archivo con las filas ordenadas
 # not run or shown in render
 samples0 <- read.delim("./Muestras.tsv", sep="\t", row.names=1)
@@ -93,19 +93,24 @@ Para seleccionar el conjunto de muestras a utilizar, vamos a generar un `vector 
 
 ```{r}
 
+# nombres de las categorías a conservar (todas en este caso)
 tejidos=c('CHE', 'THE', 'BRN', 'GEN')
 sex=c('F', 'M')
 trat=c('ctr', 'dsx')
 
+
+# Índice T/F de muestras que pertenecen a las combinaciones de categorías especificadas
+#   El operador & indica T sólo si se cumplen las condiciones a izquierda y derecha a la vez 
+#   (T&T = T; T&F = F; F&F = F)
 idx.muestras= samples$Tissue %in% tejidos & # TRUE para las muestras pertenecientes (%in%) a los tejidos defeinidos (todos)
   samples$Sex %in% sex & # TRUE para las muestras pertenecientes (%in%) a los sexos defeinidos (todos)
   samples$Treatment %in% trat # TRUE para las muestras pertenecientes (%in%) a los tratamientos defeinidos (todas)
 
 ```
 
-Corra la suigiente linea en la consola para ver cómo quedan asignados los valores `T`/`F` a cada muestra.
+Corra la siguiente linea en la consola para ver cómo quedan asignados los valores `T`/`F` a cada muestra.
 
-```{r, eval=F, echo=T}
+```{r, echo=T, results='hide'}
 
 cbind(samples, idx.muestras) 
 
@@ -150,6 +155,7 @@ reads.minimos=100
 c(rowSums(counts(data_0)) >= reads.minimos ) %>% sum()
 
 ```
+
 Para el resto del trabajo vamos a utilizar un umbral de 10 lecturas para considerar genes con suficiente información, pero sin descartar demasiados.
 ```{r}
 reads.minimos=10
@@ -161,9 +167,7 @@ n.genes=nrow(data_filtered)
 
 ```
 
-## Exploración y análisis
-
-### Comparación de transcriptomas entre muestras
+## Comparación de transcriptomas entre muestras
 
 A continuación, vamos a realizar una comparación general de los transcriptomas de todas las muestras. Recuerde que cada muestra cuenta, para cada gen, con un nivel de expresión determinado (el cual aproximamos con el número de lecturas de RNAseq que mapearon sobre ese gen). Por lo tanto, podemos considerar que cada muestra está en una determinada posición en cada uno de los `r n.genes` ejes definidos por el conjunto de genes.
 
@@ -316,20 +320,22 @@ pheatmap(sampleDistMatrix,
 **¿Qué patrón prominente observa? ¿Hay algún factor (tejido, sexo, tratamiento) que determine más el perfil transcriptómico de una muestra que los otros factores?**
 
 
-### Análisis de expresión génica diferencial
+## Análisis de expresión génica diferencial
 
-#### Análisis estadístico utilizando `DESeq`
+### Análisis estadístico utilizando `DESeq`
 
-A continuación vamos a realizar un análisis estadístico de expresión diferencial. Este evalúa el grado de diferencia en el nivel de expresión de cada gen entre los diferentes niveles de cada factor especificado (tejido, sexo, tratamiento, etc.). Para este análisis, vamos a trabajar sólo con las muestras del tejido cefálico sin tratamiento con RNA de interferencia de *dsx*. El filtrado lo hacemos utilizando un vector lógico (`idx.muestras`) igual que antes.
+A continuación vamos a realizar un análisis estadístico de expresión diferencial. Este evalúa el grado de diferencia en el nivel de expresión de cada gen entre los diferentes niveles de cada factor especificado (tejido, sexo, tratamiento, etc.). Para este análisis, vamos a trabajar sólo con las muestras del *tejido cefálico* sin tratamiento con RNA de interferencia de *dsx*. El filtrado lo hacemos utilizando un vector lógico (`idx.muestras`) igual que antes.
 
 ```{r, warning=F}
 
-# subconjunto de muestras
-tejidos=c('CHE')
-sex=c('F', 'M')
-trat=c('ctr')
+# nombres de las categorías a conservar
+tejidos=c('CHE') # tejido cefálico
+sex=c('F', 'M') # ambos sexos
+trat=c('ctr') # individuos control
 
-# índice T/F de muestras que pertenecen al subconjunto especificado
+# índice T/F de muestras que pertenecen a las combinaciones de categorías especificadas
+# el operador & indica T sólo si se cumplen las condiciones a izquierda y derecha a la vez 
+# (T&T = T; T&F = F; F&F = F)
 idx.muestras= samples$Tissue %in% tejidos &
   samples$Sex %in% sex &
   samples$Treatment %in% trat
@@ -359,7 +365,7 @@ Con el resultado de esta estimación, podemos generar una tabla que muestre el g
 ```{r}
 res = results(de.an, contrast = c('Sex', 'M', 'F')) %>% 
   as.data.frame() %>% 
-  select(-c(4:5)) # borrar algunas columans que no son de interés
+  dplyr::select(-c(4:5)) # borrar algunas columans que no son de interés
 
 head(res, 5)
 
@@ -380,12 +386,25 @@ res2=res[order(abs(res$log2FoldChange), decreasing = T),] %>% # re-ordenamiento
   as.data.frame() %>% # llevar a formato (class) data.frame
   filter(padj<=0.05) # filtrar por significancia (p-valor < 0.05)
 
-
+# print primeras filas
 print(head(res2))
 
 ```
+Exportamos estas filas a un archivo que gusrdamos en el almacenamiento.
 
-#### Comparación gráfica utilizando `ggplot`
+```{r}
+
+write.table(res2%>% # tabla completa
+              mutate(gene=rownames(res2)) %>% # agregamos columna de genes
+              mutate(genomic.sequence=NA) %>% # columna vacía para llenar después
+              head(), 
+            file = './head.results_samples.CHE.ctrl_DE.MvsF.csv', 
+            sep = '\t', row.names = F)
+
+```
+
+
+### Comparación gráfica utilizando `ggplot`
 
 También podemos hacer una comparación gráfica de los niveles de expresión de cada gen entre condiciones. Para esto, lo más correcto sería corregir/normalizar los valores de conteos por *tamaño de la librería*. Esto se debe a que durante la extrracción y preparación del RNA para la secuenciación, hay errores de procedimiento que generan variaciones en la cantidad de RNA entre muestras que nada tienen que ver con diferencias en el nivel de expresión. Por lo tanto, conviene relativizar el conteo de cada gen de una muestra respecto de la cantidad total de reads que se obtuvieron de la misma.
 Las siguientes lineas hacen esa normalización.
@@ -475,10 +494,61 @@ LFC = ', res$log2FoldChange[rownames(res) %in% genes] %>% round(2)) %>%
 
 ```
 
+**¿Son estos gráficos coherentes con los signos de los valores de LFC? Justifique**
 
-```{r para diapositiva, echo=F, include=F, fig.width=8, fig.height=3}
+### Investigación sobre genes diferencialmente expresados
 
-# este codigo es para una diapo, ignorar
+Busque los **dos** genes con mayor diferencias en su expresión (entre las regiones de los cuernos cefálicos de machos y hembras) en el *Apollo Browser* del consorcio i5k (https://i5k.nal.usda.gov/node/739225). Para cada uno, copie el código (`OTAU0...`) de la tabla `res2` (recordemos que esta contiene lo mismo que `res` pero está ordenada por LFC y filtrada por significancia estadística). Para buscar el modelo correspondiente, pegue el código en el buscador del browser Apollo y complete con `-RA` al final. Esto es necesario ya que la base de datos de Apollo almacena los modelos de genes de *O. taurus* con el sufijo `-RA`.
+En el panel de la izquierda, active los tracks de *coverage* de RNA proveniente de machos (`O. taurus M PD1 BRN+CHE+THE+GEN transcripts`) y  de hembras (`O. taurus F PD1 BRN+CHE+THE+GEN transcripts`). Si bien estos están construidos a partir de lecturas de RNAseq proveniente de todos los tejidos, no solo tejido cefálico (`CHE`), pueden darnos información sobre expresión diferencial entre sexos a nivel general. 
+
+**¿Son las diferencias de covergae entre machos y hembras coherentes con los valores de LFC y el gráfico de expresión? Justifique**
+
+Elija uno de estos genes para . 
+
+Seleccione el modelo clickeando en un intrón, luego *click derecho* -> *View details*. Scrollee hasta la primer secuencia, selecciónela con doble click y cópiela en un archivo de texto (puede usar la última columna, vacía, del archivo de texto .csv generado previamente). Esta corresponde a la secuencia **genómica** del modelo, por lo tanto, contiene tanto CDS como UTRs e intrones.
+
+**¿Qué tipos de BLAST podría utilizar para identificar esta secuencia con de la base de datos de NCBI? ¿Cuáles creen que pueden ser los pros y contras de cada uno de ellos?**
+
+Realice un BLAST de cada uno de los tipos de algoritmos que sugirió, utilizando la secuencia copiada como query, desde el sitio de *BLAST de NCBI* (`https://blast.ncbi.nlm.nih.gov/Blast.cgi`).
+
+**Teniendo en cuenta los primeros hits resultantes**
+**¿De qué gen se trata, o a qué familias génicas se asemeja?**
+
+### Búsqueda de gen/es específico/s
+
+Uno de los tantos genes que se cree puede estar relacionado con la regulación del desarrollo de cuernos (ver *Linz & Moczek, 2020*) es *cubitus interruptus* (*ci*). Para evaluar si este se encuentra diferencialmente expresado entre los tejidos cefácilos de machos y hembras de *O. taurus*, es necesario averiguar el código del modelo de gen correspondiente. Con el código del modelo de gen vamos a poder identificar la fila correspondiente en la tabla de resultados del anális de expresión diferencial (`res`) e interpretar los valores de LFC y p-valores.
+
+Para encontrar el modelo de gen de *O. taurus* correspondiente a *ci*, podemos buscar aquel cuya secuencia se asemeje más a la secuencia del mismo gen en una especie cercanamente emparentada. Para esto podemos utilizar la secuencia de *ci* del escarabajo modelo *Tribolium castaneum* como query en un BLAST que busque esta secuencia entre las de los modelos de *O. taurus*.
+Para obtener la secuencia de *ci* de *T. castaneum*, busque `cubitus interruptus tribolium castaneum` en las bases de datos de `Gene` de NCBI. El primer resultado debería ser el que necesitamos. Dentro de este, vaya a la sección de `NCBI Reference Sequences (RefSeq)` y busque la versión proteica de la secuencia (es aquella con el prefijo XP_). Al abrir el enlace de esta proteína aparece una opción, debajo del nombre de la misma, para obtener la secuencia en formato FASTA. Esta es la secuencia que vamos a utilizar como query para identificar el modelo de gen de *ci* en *O. taurus*.
+
+**Considerando que los posibles targets de la búsqeuda BLAST son las secuencias nucleotídicas de los modelos de genes de *O. taurus* ¿Qué tipo de BLAST cree que se debería utilizar en este caso?**
+
+Vaya a la plataforma de BLAST del consorcio i5k (en el que se encuentran enmarcados el genoma y los modelos de *O. taurus* que estamos utilizando): https://i5k.nal.usda.gov/webapp/blast/. Seleccione la especie *Onthophagus taurus* y, en particular, el set de datos de Transcripts (que contiene las secuencias de cada modelo de gen).
+
+![](./imagenes/i5k_BLAST.png)
+
+En la caja del query pegue la secuencia de *ci* de *T. castaneum* y clickee en `search` para ejecutar el BLAST. Notese que en este caso la plataforma identificó automáticamente el tipo de BLAST a ejecutar, pero a veces puede ser necesario especificarlo.
+En la tabla de resultados (panel de abajo a la izquierda), identifique el modelo de gen que obtuvo un mejor hit.
+
+**¿Qué E-value tiene? ¿Considera que es un hit con un buen soporte estadístico?**
+
+Si es así, copie el código de ese modelo de gen (sin el sufijo `-RA`) y utilícelo para buscar si mostró expresión diferencial entre los tejidos cefácilos de machos y hembras de *O. taurus*. Para esto, puede fitrar la tabla de resultados del análisis de expresión diferencial (`res`) con la siguiente linea (reemplace el string `codigo` por el código del modelo).
+
+```{r eval=F}
+res[rownames(res)=='codigo',]
+```
+
+**¿Está el gen *ci* diferencialmente expresado entre los tejidos cefálicos de machos y hembras? ¿En qué sexo se expresa más? ¿Cuántas veces mayor es el nivel medio de expresión en ese sexo?**
+
+
+
+
+
+
+
+```{r para diapositiva, echo=F, include=F, fig.width=8, fig.height=3, purl=FALSE}
+
+# este codigo es para una diapo, IGNORAR
 
 topgenes.n=10 # cantidad de genes a considerar
 
@@ -523,31 +593,6 @@ ggplot(data= data.plot.2) +  # datos en los que ggplot buscará lo que le ordene
 
 
 ```
-
-
-**¿Es este gráfico coherente con los sentidos de cambio de expresión indicados por el signo de los valores de LFC? Justifique**
-
-#### Investigación sobre genes diferencialmente expressados
-
-
-Busque los dos genes con mayor diferencias en su expresión (entre las regiones de los cuernos cefálicos de machos y hembras) en el *Apollo Browser* (https://i5k.nal.usda.gov/node/739225). Para esto copie los códigos (`OTAU0...`) de los primeros dos nombres de fila de la tabla `res2` (recordemos que esta contiene lo mismo que `res` pero está ordenada por LFC y filtrada por significancia estadística). Para buscar el modelo correspondiente a cada gen, pegue el código en el buscador del browser Apollo y complete con `-RA` al final. Esto se debe a que la base de datos de Apollo almacena los modelos de genes de *O. taurus* con el sufijo `-RA`.
-En el panel de la izquierda, active los tracks  `O. taurus M PD1 BRN+CHE+THE+GEN transcripts`   y   `O. taurus F PD1 BRN+CHE+THE+GEN transcripts`  para ver los perfiles de *coverage*
-**¿Son las diferencias de covergae coherentes con los valores de LFC y el gráfico de expresión? Justifique**
-
-
-
-
-
-Cuando identifique el modelo correspondiente, selecciónelo clickeando en un intron. Luego *click derecho* -> *View details*. Scrollee hasta la primer secuencia, selecciónela con soble click y cópiela en un archivo de texto. Esta corresopnde a la secuencia **genómica** del modelo, es decir, contiene los intrones.
-
-
-
-
-
-
-
-
-
 
 
 
