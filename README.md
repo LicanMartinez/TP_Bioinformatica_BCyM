@@ -1,8 +1,41 @@
 El código para la guía está en 1 o más markdowns que hay que knitear a WORD (porque a odt queda feo el estilo del código).
-El word de cada sección (si fueran mas de 1) se incrusta en el master document 'Guia de TP RNAseq.odm', ahí está toda la info de los estilos del texto. Eso es en el directorio ./Via libre office.
-La opción que terminamos usando es knitear cada sección a un pdf independiente (3 PDFs).
-
+El word de cada sección (si fueran mas de 1) se incrusta en el master document 'Guia de TP RNAseq.odm', ahí está toda la info de los estilos del texto.
+Para esto: en el navegador del master document click derecho -> insertar -> buscas el subdocument (word en este caso)
 Estructura del TP y comentarios:
+
+Introducción de anotación de genes
+	Repaso de RNA-seq -> Presentación Licán.
+	Ver intrones, exones, UTRs, splicing alternativo, etc... (buscar genes piolas si hay tiempo)
+	BLAST y NCBI
+	FASTAs 
+		
+Introducción al abordaje cuantitativo del análisis de RNAseq (mini-teórica que ya dí, mejorarla)
+(seguir presentación de lican)
+	tablas de conteos
+	comparación estadística para GENES particulares # buscar genes por id en i5k o apollo
+	PCA, heatmaps, custering y similitud de los patrones de expresión entre MUESTRAS
+	
+	
+Cómo se hacen estas cosas en R
+	Intro básica de elementos de R (ANEXO)
+		Objetos, funciones, argumentos, paquetes (ANEXO)
+Guía Principal (hay que curarla para sacarle complejidad, hay varias cosas innecesarias)
+Planteamiento para hablar con Lore y Eze:
+
+Hacer primero un TP más clásico: 
+	Una guia con pasos de un pipeline de ejemplo, se hace en al aula y se van viendo los problemas sobre la marcha (de R o conceptuales).
+	En la guía de ejemplo se deberían mostrar:
+		Comparación de expresión de genes puntuales entre contextos celulares
+			Búsqueda de genes usando blast
+			Identificación de esos genes en el dataset
+			t-test (lo ven en estadística 1), gráficos custom, etc...		# OJO, ESTO NO ES TÉCNICAMENTE RIGUROSO PORQUE LOS DATOS VIENEN SIN TAMA NO DE LAS LIBRERÍAS RNAseq		
+		Comparación de patrón de transcripción gral entre dos contextos celulares (tejidos, sexo y/o dsxRNai).
+			PCA, heatmaps de muestras
+	Esto se entregaría de forma sencilla. Se puede hacer un "ïnforma" que sea una guía de preguntas simples que irían contestando
+		El objetivo del informe sería mas que nada para confirmar que estuvieron siguiendo el tp, nada más.
+Que después ellos (ellas en 2022) reproduzcan el pipeline que vimos juntos pero aplicado a una pregunta de su interés
+	Este sería el TP final que presentan
+Cronograma final de actividades:
 
 1. 6 DE MAYO: TP4a (PRE-TP4a) -> Transcriptómica y anotación (2 hs) (OFFLINE, EN AULA 9)
 	1.1 Introducción a transcriptomica:
