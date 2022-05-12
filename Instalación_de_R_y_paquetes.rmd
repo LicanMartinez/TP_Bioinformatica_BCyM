@@ -8,18 +8,18 @@ output:
 
 # Instalación de R 4
 
-Para utilizar el lenguaje de programación R debemos tenerlo instalado en nuestro sistema. Si nunca utilizó R en su equipo, entonces debe descargarlo e instalarlo. El código de este trabajo práctico fue probado en la versión de R 4.0. Esto no significa que no vaya a funcionar con versiones anteriores, pero hay más probabilidad de incompatibilidades. Si ya ha utilizado R en su equipo, compruebe que la versión sea al menos mas reciente que 4.0. Para chequear su versión de R tipee `version` en la consola y córralo con *Enter*:
+Para utilizar el lenguaje de programación R debemos tenerlo instalado en nuestro sistema. Si nunca utilizó R en su equipo, entonces debe descargarlo e instalarlo. El código de este trabajo práctico fue probado en la versión de R 4.1.2. Esto no significa que no vaya a funcionar con versiones anteriores, pero hay más probabilidad de incompatibilidades. Si ya ha utilizado R en su equipo, compruebe que la versión sea al menos mas reciente que 4.1. Para chequear su versión de R tipee `version` en la consola y córralo con *Enter*:
 
-```{r, purl=F}
+```{r, purl=F, results='hide'}
 version
 ```
 
-Si su versión de R es < 4, **o si nunca utilizó R en su equipo**, descargue e instale la versión R 4.0 desde el siguiente link: https://cran.r-project.org/bin/windows/base/old/4.0.0/ . Cuando haya finalizado la descarga del instalador (R-4.0.0-win.exe) ejecútelo.
+Si su versión de R es < 4, **o si nunca utilizó R en su equipo**, descargue e instale la versión R 4.1.2 desde el siguiente link: https://cran.r-project.org/bin/windows/base/old/4.1.2/ . Cuando haya finalizado la descarga del instalador (R-4.1.2-win.exe) ejecútelo.
 
 # Instalación de Rstudio
 
 Para trabajar con R, conviene además instalar un software que nos permita: mejorar la interacción con el código (su lectura y escritura), visualizar resultados (por ej. tablas y gráficos), manejar archivos de trabajo, entre otras funciones. El programa más usado para esto normalmente es Rstudio, y es el que vamos a utilizar por defecto en este trabajo. Para descargar e instalar Rstudio vaya al siguiente link: rstudio.com/products/rstudio/download/ . Descargue e instale la versión gratuita.
-Si en su equipo se había instalado alguna versión de R anterior a la versión 4, entonces es posible que sea necesario especificarle a Rstudio qué versión debe utilizar. Para ello vaya a la pestaña *Tools / Global options...*. En el apartado de *R Sessions* confirme que la versión seleccionada es algo del estilo `C:\Program Files\R\R-4.0.4`. Si está seleccionada una versión anterior a R 4 entonces cámbiela a esta última mediante la opción *Change...*.
+Si en su equipo se había instalado alguna versión de R anterior a la versión 4, entonces es posible que sea necesario especificarle a Rstudio qué versión debe utilizar. Para ello vaya a la pestaña *Tools / Global options...*. En el apartado de *R Sessions* confirme que la versión seleccionada es algo del estilo `C:\Program Files\R\R-4.1.2`. Si está seleccionada una versión anterior a R 4 entonces cámbiela a esta última mediante la opción *Change...*.
 
 # Instalación de los paquetes
 
@@ -32,7 +32,7 @@ Para instalar todos los paquetes de bioconductor que vamos a usar, primero guard
 
 ```{r}
 # nombres de los paquetes de Bioconductor que vamos a instalar
-bioc.p=c("DESeq2", "vsn", "apeglm", "genefilter", "IHW", "edgeR")
+bioc.p=c("DESeq2", "vsn")
 ```
 
 Luego descargamos el paquete BiocManager que va a gestionar la instalación de todos estos paqeutes de Bioconducor.
@@ -44,24 +44,9 @@ Luego descargamos el paquete BiocManager que va a gestionar la instalación de t
 install.packages("BiocManager") 
 
 # descargamos los paquetes que espcificamos anteriormente en la lista bioc.p
-BiocManager::install(version = "3.12", force = T)
 BiocManager::install(bioc.p, force = T)
 
 ```
-
-
-### Si la versión de R es < 3.5
-
-En caso de que haya tenido problemas con la actualización de R, y su versión sea menor a 3.5, puede probar las siguientes lineas en vez de las que se corrieron anteriormente.
-
-```{r, eval=F, purl=F}
-
-source("https://bioconductor.org/biocManager.R")
-
-BiocInstaller::biocManager(bioc.p)
-
-```
-
 
 ## Otros paquetes
 

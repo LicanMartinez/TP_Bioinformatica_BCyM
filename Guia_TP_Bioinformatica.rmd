@@ -15,15 +15,13 @@ Si la instalación de todo funcionó, entonces podemos cargar los paquetes en la
 # Definimos la lista de nombres de los paquetes que R va a llamar
 
 pckg.ls=c(# análiis de datos moleculares (bioconductor)
-         "DESeq2", "vsn", "apeglm", "genefilter", "IHW", "edgeR", 
+         "DESeq2", "vsn",
          
           # otros paquetes
          "dplyr", "tidyr", # manipulación de datos
          "ggplot2", # generación de gráficos
          "pheatmap", # gráficos de mapas de calor
          "RColorBrewer", # paletas de colores para los gráficos
-         # "PoiClaClu", # cálculo de distancias de Poisson
-         # "ggbeeswarm", 
          'gridExtra', # múltiplies gráficos en un único panel
          'colorspace' # configuraciones de color
          )
