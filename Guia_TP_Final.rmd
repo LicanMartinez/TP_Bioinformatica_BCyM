@@ -1,0 +1,32 @@
+---
+title: "Trabajo práctico final"
+author: "Biología Celular y Molecular 2022"
+output: 
+  pdf_document: default
+---
+
+# Introducción
+
+Para practicar el abordaje de preguntas biológicas mediante el análisis de datos de RNAseq, en este trabajo final deberán plantear y poner a prueba alguna hipótesis biológica explorando, con las herramientas implementadas en el TP 4, el *dataset* de RNAseq de *Onthophagus taurus*. Para esto, les proponemos 3 posibles lineas de investigación sobre la biología del desarrollo de *O. taurus*; pero siéntanse libres para proponer sus propias ideas y/o preguntas si así lo desean.
+
+## 1 -- Transcriptómica del cerebro:
+
+Si bien la morfología externa del cerebro de *Onthophagus taurus* no muestra dimorfismos sexuales obvios, es muy probable que las diferencias de comportamiento entre sexos estén mediadas, al menos en parte, por diferencias neurales resultantes de patrones de expresión diferencial durante el desarrollo de este tejido durante la metamorfosis. ¿Cuántas de estas diferencias entre sexos están potencialmente bajo control por *dsx*? ¿Qué genes o familias de genes están asociados a estas diferencias entre sexos?
+
+Para poder contestar estas preguntas, se pueden usar los datos específicos de cerebro (BRN) del conjunto de datos de RNAseq (ver sección de **Selección de muestras** en el TP 4).
+
+```{r}
+
+```
+
+## 2 -- Sesgo sexual y nivel de dimorfismo:
+
+En *Onthophagus taurus*, la cabeza de las pupas masculinas y femeninas se diferencia por la presencia de enormes cuernos en las primeras, y su ausencia en las segundas. En cambio, ambos sexos muestran un cuerno torácico con un dimorfismo mucho más moderado. ¿Correlaciona esta diferencia entre niveles de dimorfismo con el tamaño y composición de los repertorios de genes expresados diferencialmente entre sexos en cada tejido? ¿Hay genes que presentan un sesgo sexual consistente entre ambos tejidos? ¿Qué genes o familias de genes están asociados a estas diferencias entre sexos en cada tejido?
+
+Para poder contestar estas preguntas, se pueden usar los datos específicos de los individuos con tratamiento control (*ctr*) y tejidos dorsal cefálico (CHE) y dorsal protorácico (THE) del conjunto de datos de RNAseq (ver sección de **Selección de muestras** en el TP 4).
+
+## 3 -- Bases transcriptómicas del dimorfismo cefálico
+
+Los machos de *Onthophagus taurus* compiten por las hembras en la entrada de los túneles, y han evolucionado cuernos exageradamente grandes. Las hembras en cambio pasan buena parte de su vida excavando túneles en el suelo bajo los parches de estiércol; los cuernos resultan muy imprácticos para esta tarea, y por tanto carecen de cuernos. ¿Cuántos genes hacen falta para generar tan marcada diferencia entre sexos? ¿Cuantos de estos genes están potencialmente bajo el control de *dsx*? ¿Qué genes o familias de genes están implicados en la formación de cuernos?
+
+Para poder contestar estas preguntas, se pueden usar los datos específicos de los cuernos cefálicos (CHE) del conjunto de datos de RNAseq (ver sección de **Selección de muestras** en el TP 4).
